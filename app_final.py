@@ -44,7 +44,7 @@ tab1, tab2 = st.tabs(["📝 PARTE OPERADOR", "📈 HOJA DE PRODUCCIÓN"])
 # PESTAÑA 1: Ficha Diaria Original
 # ---------------------------------------------------------------------
 with tab1:
-    st.markdown("<h3 style='text-align: center;'>Ficha de Control Diario</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center;'>Parte Diario de Operador</h3>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; font-size: 14px;'>Los campos con <span style='color: red;'>*</span> son obligatorios</p>", unsafe_allow_html=True)
 
     with st.form("ficha_diaria", clear_on_submit=True):
@@ -89,7 +89,7 @@ with tab1:
 # PESTAÑA 2: Módulo de Costos con Formato
 # ---------------------------------------------------------------------
 with tab2:
-    st.markdown("<h3 style='text-align: center;'>Registro de Costo Diario</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center;'>Hoja de Producción</h3>", unsafe_allow_html=True)
     fecha_costos = st.date_input("Fecha de este reporte", datetime.date.today(), key="fecha_costo")
 
     base_mo = [["Jefe de Grupo", "hh"], ["Oficial", "hh"], ["Oficial Plantillero", "hh"], ["Ayudante", "hh"], ["Operario", "hh"], ["Op. Camion Micropavimentador", "hh"], ["Op. Caja Esparcidora", "hh"], ["Op. Retroexcavadora", "hh"], ["Op. Camion Baranda", "hh"], ["Op. Minicargador", "hh"], ["Op. Cisterna de Agua", "hh"], ["Op. Cisterna de Emulsion 5,000 gln", "hh"], ["Op. Rastrillero", "hh"], ["Op. Esquinero", "hh"], ["Op. Cargador Frontal", "hh"], ["Vigia Mype", "hh"], ["Vigilante Mype", "hh"]]
