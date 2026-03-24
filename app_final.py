@@ -38,7 +38,7 @@ st.markdown("""
 # =====================================================================
 # CREACIÓN DE LAS PESTAÑAS (TABS)
 # =====================================================================
-tab1, tab2 = st.tabs(["📝 REPORTE DIARIO", "💰 COSTO DIARIO"])
+tab1, tab2 = st.tabs(["📝 PARTE OPERADOR", "📈 HOJA DE PRODUCCIÓN"])
 
 # ---------------------------------------------------------------------
 # PESTAÑA 1: Ficha Diaria Original
