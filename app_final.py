@@ -185,4 +185,4 @@ with tab2:
         except Exception as e:
             st.error(f"❌ Falló la conexión al enviar o dar formato. Error: {e}")
 
-st.markdown("<br><hr><p style='text-align: center; color: gray; font-size: 12px;'><b>cachi</b> © 2026</p>", unsafe_allow_html=True)
+st.markdown("<br><hr><p style='text-align: center; color: gray; font-size: 12px;'><b>EngiLab</b> © 2026</p>", unsafe_allow_html=True)
