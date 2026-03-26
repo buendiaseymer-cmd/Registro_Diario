@@ -132,7 +132,7 @@ with tab2:
         st.markdown("<br>", unsafe_allow_html=True)
         enviado_costos = st.form_submit_button("Guardar Formato", use_container_width=True, type="primary")
 
-    if enviado_costos:
+if enviado_costos:
         # Validación rápida para los nuevos campos
         if not jefe_grupo or not frente_costos:
             st.error("⚠️ Faltan campos obligatorios en la cabecera (Jefe de Grupo o Frente).")
@@ -146,14 +146,15 @@ with tab2:
             bloque_final = []
             
             # --- NUEVA ESTRUCTURA DEL EXCEL ---
-            # Cabecera de 4 filas ubicadas en las columnas C (Títulos) y D (Respuestas)
             bloque_final.append(["", "", "FECHA:", fecha_str])
             bloque_final.append(["", "", "JEFE DE GRUPO:", jefe_grupo])
             bloque_final.append(["", "", "FRENTE:", frente_costos])
-            bloque_final.append(["", "", "TURNO:", turno_costos])
             bloque_final.append(["", "", "", ""]) # Espacio en blanco
             
-            # Tablas (ahora son de 4 columnas de la A a la D)
+            # CAMBIO AQUÍ: Colocamos el Turno en la columna C, listo para combinarse con la D
+            bloque_final.append(["", "", turno_costos, ""]) 
+            
+            # Tablas 
             bloque_final.append(["Descripción del recurso", "Und", "Cant", "Hr"])
             bloque_final.append(["Mano de obra", "", "", ""])
             bloque_final.extend(df_mo.values.tolist())
@@ -172,19 +173,27 @@ with tab2:
                 celda_inicio = rango_actualizado.split('!')[1].split(':')[0] 
                 fila_inicio = int(''.join(filter(str.isdigit, celda_inicio))) 
                 
-                # 3. Recalculamos posiciones (ahora sumando la nueva cabecera de 5 filas)
+                # 3. Recalculamos posiciones
                 fila_fin = fila_inicio + len(bloque_final) - 1
                 fila_eq = fila_inicio + 7 + len(df_mo)
                 fila_mat = fila_eq + 1 + len(df_eq)
 
                 # --- FORMATO VISUAL ---
                 
-                # Cabecera: Negritas para etiquetas en col C, centrado para datos en col D
-                hoja_costos.format(f"C{fila_inicio}:C{fila_inicio+3}", {
+                # Cabecera: Negritas para etiquetas en col C, centrado para datos en col D (ahora solo 3 filas)
+                hoja_costos.format(f"C{fila_inicio}:C{fila_inicio+2}", {
                     "textFormat": {"bold": True},
                     "horizontalAlignment": "RIGHT"
                 })
-                hoja_costos.format(f"D{fila_inicio}:D{fila_inicio+3}", {
+                hoja_costos.format(f"D{fila_inicio}:D{fila_inicio+2}", {
+                    "horizontalAlignment": "CENTER",
+                    "textFormat": {"bold": True}
+                })
+
+                # --- NUEVO: COMBINAR Y CENTRAR EL TURNO ---
+                rango_turno = f"C{fila_inicio+4}:D{fila_inicio+4}"
+                hoja_costos.merge_cells(rango_turno)
+                hoja_costos.format(rango_turno, {
                     "horizontalAlignment": "CENTER",
                     "textFormat": {"bold": True}
                 })
@@ -195,7 +204,7 @@ with tab2:
                 hoja_costos.format(f"A{fila_eq}", {"textFormat": {"bold": True}})
                 hoja_costos.format(f"A{fila_mat}", {"textFormat": {"bold": True}})
                 
-                # Bloque verde reajustado a las nuevas columnas C y D (Cant y Hr)
+                # Bloque verde 
                 hoja_costos.format(f"C{fila_inicio+6}:D{fila_fin-1}", {
                     "backgroundColor": {"red": 0.57, "green": 0.81, "blue": 0.31}
                 })
