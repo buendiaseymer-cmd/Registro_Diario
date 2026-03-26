@@ -94,7 +94,7 @@ with tab2:
 
     base_mo = [["Jefe de Grupo", "hh"], ["Oficial", "hh"], ["Oficial Plantillero", "hh"], ["Ayudante", "hh"], ["Operario", "hh"], ["Op. Camion Micropavimentador", "hh"], ["Op. Caja Esparcidora", "hh"], ["Op. Retroexcavadora", "hh"], ["Op. Camion Baranda", "hh"], ["Op. Minicargador", "hh"], ["Op. Cisterna de Agua", "hh"], ["Op. Cisterna de Emulsion 5,000 gln", "hh"], ["Op. Rastrillero", "hh"], ["Op. Esquinero", "hh"], ["Op. Cargador Frontal", "hh"], ["Vigia Mype", "hh"], ["Vigilante Mype", "hh"]]
     base_eq = [["Minicargador", "HM"], ["Cisterna Estacionaria", "DM"], ["Cisterna de emulsion 5,000 gln", "DM"], ["Cisterna de agua de 4,000 gln cantera", "HM"], ["Camion Micropavimentador", "HM"], ["Compresora de Aire", "HM"], ["Retroexcavadora", "HM"], ["Cargador Frontral", "HM"], ["Camion Baranda de 4 tn", "DM"], ["Coaster de 24 pasajeros", "DM"]]
-    base_mat = [["Petróleo Biodiesel B-5", "gln"], ["Flete", "-"], ["Add blue", "gln"], ["Emulsión", "-"], ["Emulsion Controlada", "gal"], ["Cemento", "bls"], ["Arena Chancada", "m3"], ["GETs de Equipos", "%"], ["Herramientas Manuales", "%"]]
+    base_mat = [["Emulsión", "-"], ["Emulsion Controlada", "gal"], ["Cemento", "bls"], ["Arena Chancada", "m3"], ["GETs de Equipos", "%"], ["Herramientas Manuales", "%"]]
 
     def crear_tabla(datos_base):
         df = pd.DataFrame(datos_base, columns=["Descripción del recurso", "Und"])
