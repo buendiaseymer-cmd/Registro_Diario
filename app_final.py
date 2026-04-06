@@ -86,7 +86,7 @@ with tab1:
                 st.error("❌ Falló la conexión al enviar. Reintenta.")
 
 # ---------------------------------------------------------------------
-# PESTAÑA 2: HOJA DE PRODUCCIÓN (BLOQUES 1, 2, 3 y 3.1)
+# PESTAÑA 2: HOJA DE PRODUCCIÓN (CON COLUMNAS FIJAS)
 # ---------------------------------------------------------------------
 with tab2:
     st.markdown("<h3 style='text-align: center;'>Hoja de Producción</h3>", unsafe_allow_html=True)
@@ -107,11 +107,21 @@ with tab2:
         frente_prod = st.text_input("FRENTE DE TRABAJO *", key="frente_prod").upper()
 
     with st.form("form_produccion", clear_on_submit=True):
+        
+        # --- CONFIGURACIÓN BASE PARA COLUMNAS DE HORAS/CANTIDADES ---
+        columnas_base_horas = {
+            "ACT.1": st.column_config.NumberColumn("ACT.1"),
+            "ACT.2": st.column_config.NumberColumn("ACT.2"),
+            "ACT.3": st.column_config.NumberColumn("ACT.3"),
+            "ACT.4": st.column_config.NumberColumn("ACT.4"),
+            "ACT.5": st.column_config.NumberColumn("ACT.5"),
+        }
+
         # ==========================================
         # BLOQUE 1: ACTIVIDADES
         # ==========================================
         st.markdown("---")
-        st.markdown("#### Actividades")
+        st.markdown("#### BLOQUE 1: Actividades")
 
         def crear_tabla_actividades():
             columnas = ["ACT.", "NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA DEL", "PROGRESIVA AL", "LADO", "FASE"]
@@ -120,7 +130,11 @@ with tab2:
                 df.loc[len(df)] = ["", "", "", None, "", "", "", ""]
             return df
 
-        columnas_act = {"CANT.": st.column_config.NumberColumn("CANT.", format="%.2f")}
+        columnas_act = {
+            "ACT.": st.column_config.Column(pinned=True),
+            "NOMBRE DE LA ACTIVIDAD": st.column_config.Column(pinned=True),
+            "CANT.": st.column_config.NumberColumn("CANT.", format="%.2f")
+        }
 
         df_actividades = st.data_editor(
             crear_tabla_actividades(), 
@@ -131,7 +145,7 @@ with tab2:
         # BLOQUE 2: TAREO DE PERSONAL
         # ==========================================
         st.markdown("---")
-        st.markdown("#### Tareo de Personal")
+        st.markdown("#### BLOQUE 2: Tareo de Personal")
         
         def crear_tabla_tareo():
             columnas = ["N°", "TAREO PERSONAL", "CARGO", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
@@ -140,24 +154,22 @@ with tab2:
                 df.loc[len(df)] = ["", "", "", None, None, None, None, None]
             return df
 
-        columnas_numericas_5 = {
-            "ACT.1": st.column_config.NumberColumn("ACT.1"),
-            "ACT.2": st.column_config.NumberColumn("ACT.2"),
-            "ACT.3": st.column_config.NumberColumn("ACT.3"),
-            "ACT.4": st.column_config.NumberColumn("ACT.4"),
-            "ACT.5": st.column_config.NumberColumn("ACT.5"),
+        columnas_tareo = {
+            "N°": st.column_config.Column(pinned=True),
+            "TAREO PERSONAL": st.column_config.Column(pinned=True),
+            **columnas_base_horas
         }
 
         df_tareo = st.data_editor(
             crear_tabla_tareo(), 
-            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_numericas_5
+            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_tareo
         )
 
         # ==========================================
         # BLOQUE 3: EQUIPOS
         # ==========================================
         st.markdown("---")
-        st.markdown("#### Equipos")
+        st.markdown("#### BLOQUE 3: Equipos")
 
         def crear_tabla_equipos():
             columnas = ["N°", "DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
@@ -166,16 +178,22 @@ with tab2:
                 df.loc[len(df)] = ["", "", "", None, None, None, None, None]
             return df
 
+        columnas_equipos = {
+            "N°": st.column_config.Column(pinned=True),
+            "DESCRIPCION DE EQUIPOS": st.column_config.Column(pinned=True),
+            **columnas_base_horas
+        }
+
         df_equipos = st.data_editor(
             crear_tabla_equipos(), 
-            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_numericas_5
+            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_equipos
         )
 
         # ==========================================
         # BLOQUE 3.1: MATERIALES (METRADO)
         # ==========================================
         st.markdown("---")
-        st.markdown("#### Materiales (metrado)")
+        st.markdown("#### BLOQUE 3.1: Materiales (metrado)")
 
         def crear_tabla_materiales():
             columnas = ["N°", "DESCRIPCION DE LOS MATERIALES", "UNIDAD", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
@@ -184,9 +202,15 @@ with tab2:
                 df.loc[len(df)] = ["", "", "", None, None, None, None, None]
             return df
 
+        columnas_materiales = {
+            "N°": st.column_config.Column(pinned=True),
+            "DESCRIPCION DE LOS MATERIALES": st.column_config.Column(pinned=True),
+            **columnas_base_horas
+        }
+
         df_materiales = st.data_editor(
             crear_tabla_materiales(), 
-            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_numericas_5
+            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_materiales
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
