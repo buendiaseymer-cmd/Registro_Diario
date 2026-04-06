@@ -86,7 +86,7 @@ with tab1:
                 st.error("❌ Falló la conexión al enviar. Reintenta.")
 
 # ---------------------------------------------------------------------
-# PESTAÑA 2: HOJA DE PRODUCCIÓN (CON COLUMNAS FIJAS)
+# PESTAÑA 2: HOJA DE PRODUCCIÓN (AUTO-NUMERADA)
 # ---------------------------------------------------------------------
 with tab2:
     st.markdown("<h3 style='text-align: center;'>Hoja de Producción</h3>", unsafe_allow_html=True)
@@ -124,21 +124,23 @@ with tab2:
         st.markdown("#### BLOQUE 1: Actividades")
 
         def crear_tabla_actividades():
-            columnas = ["ACT.", "NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA DEL", "PROGRESIVA AL", "LADO", "FASE"]
+            # Eliminamos la columna manual "ACT." para usar el índice automático
+            columnas = ["NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA DEL", "PROGRESIVA AL", "LADO", "FASE"]
             df = pd.DataFrame(columns=columnas)
             for _ in range(3):
-                df.loc[len(df)] = ["", "", "", None, "", "", "", ""]
+                df.loc[len(df)] = ["", "", None, "", "", "", ""]
+            df.index = [1, 2, 3] # Inicializamos la numeración
             return df
 
         columnas_act = {
-            "ACT.": st.column_config.Column(pinned=True),
+            "_index": st.column_config.Column("ACT.", pinned=True, disabled=True), # Usamos la columna fantasma
             "NOMBRE DE LA ACTIVIDAD": st.column_config.Column(pinned=True),
             "CANT.": st.column_config.NumberColumn("CANT.", format="%.2f")
         }
 
         df_actividades = st.data_editor(
             crear_tabla_actividades(), 
-            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_act
+            num_rows="dynamic", use_container_width=True, column_config=columnas_act
         )
 
         # ==========================================
@@ -148,21 +150,23 @@ with tab2:
         st.markdown("#### BLOQUE 2: Tareo de Personal")
         
         def crear_tabla_tareo():
-            columnas = ["N°", "TAREO PERSONAL", "CARGO", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
+            # Eliminamos la columna manual "N°"
+            columnas = ["TAREO PERSONAL", "CARGO", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
             df = pd.DataFrame(columns=columnas)
             for _ in range(3):
-                df.loc[len(df)] = ["", "", "", None, None, None, None, None]
+                df.loc[len(df)] = ["", "", None, None, None, None, None]
+            df.index = [1, 2, 3]
             return df
 
         columnas_tareo = {
-            "N°": st.column_config.Column(pinned=True),
+            "_index": st.column_config.Column("N°", pinned=True, disabled=True),
             "TAREO PERSONAL": st.column_config.Column(pinned=True),
             **columnas_base_horas
         }
 
         df_tareo = st.data_editor(
             crear_tabla_tareo(), 
-            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_tareo
+            num_rows="dynamic", use_container_width=True, column_config=columnas_tareo
         )
 
         # ==========================================
@@ -172,21 +176,22 @@ with tab2:
         st.markdown("#### BLOQUE 3: Equipos")
 
         def crear_tabla_equipos():
-            columnas = ["N°", "DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
+            columnas = ["DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
             df = pd.DataFrame(columns=columnas)
             for _ in range(3):
-                df.loc[len(df)] = ["", "", "", None, None, None, None, None]
+                df.loc[len(df)] = ["", "", None, None, None, None, None]
+            df.index = [1, 2, 3]
             return df
 
         columnas_equipos = {
-            "N°": st.column_config.Column(pinned=True),
+            "_index": st.column_config.Column("N°", pinned=True, disabled=True),
             "DESCRIPCION DE EQUIPOS": st.column_config.Column(pinned=True),
             **columnas_base_horas
         }
 
         df_equipos = st.data_editor(
             crear_tabla_equipos(), 
-            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_equipos
+            num_rows="dynamic", use_container_width=True, column_config=columnas_equipos
         )
 
         # ==========================================
@@ -196,21 +201,22 @@ with tab2:
         st.markdown("#### BLOQUE 3.1: Materiales (metrado)")
 
         def crear_tabla_materiales():
-            columnas = ["N°", "DESCRIPCION DE LOS MATERIALES", "UNIDAD", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
+            columnas = ["DESCRIPCION DE LOS MATERIALES", "UNIDAD", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
             df = pd.DataFrame(columns=columnas)
             for _ in range(3):
-                df.loc[len(df)] = ["", "", "", None, None, None, None, None]
+                df.loc[len(df)] = ["", "", None, None, None, None, None]
+            df.index = [1, 2, 3]
             return df
 
         columnas_materiales = {
-            "N°": st.column_config.Column(pinned=True),
+            "_index": st.column_config.Column("N°", pinned=True, disabled=True),
             "DESCRIPCION DE LOS MATERIALES": st.column_config.Column(pinned=True),
             **columnas_base_horas
         }
 
         df_materiales = st.data_editor(
             crear_tabla_materiales(), 
-            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_materiales
+            num_rows="dynamic", use_container_width=True, column_config=columnas_materiales
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -249,8 +255,10 @@ with tab2:
             bloque_final.append(["", "", "", "", "DEL", "AL", "", "", ""])
             
             if not df_actividades.empty:
-                for row in df_actividades.values.tolist():
-                    fila_limpia = [float(x) if isinstance(x, (int, float)) else str(x) for x in row]
+                df_actividades.reset_index(drop=True, inplace=True) # Reseteamos para evitar huecos si se borró una fila
+                for i, row in df_actividades.iterrows():
+                    num_act = str(i + 1) # Numeración perfecta 1, 2, 3...
+                    fila_limpia = [num_act] + [float(x) if isinstance(x, (int, float)) else str(x) for x in row]
                     fila_limpia.append("") 
                     bloque_final.append(fila_limpia)
             else:
@@ -259,7 +267,6 @@ with tab2:
             bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
             len_b1 = len(bloque_final) 
 
-            # Función de ayuda para números (oculta ceros)
             def mostrar_num(n): return n if n > 0 else ""
 
             # --- DATOS BLOQUE 2 ---
@@ -270,10 +277,12 @@ with tab2:
             filas_datos_b2 = 0
 
             if not df_tareo.empty:
-                for index, row in df_tareo.iterrows():
+                df_tareo.reset_index(drop=True, inplace=True)
+                for i, row in df_tareo.iterrows():
+                    num_fila = str(i + 1)
                     horas_limpias = []
-                    for i in range(1, 6):
-                        val = row.get(f"ACT.{i}", "")
+                    for j in range(1, 6):
+                        val = row.get(f"ACT.{j}", "")
                         try:
                             horas_limpias.append(float(val) if val != "" else 0.0)
                         except:
@@ -284,7 +293,7 @@ with tab2:
                     filas_datos_b2 += 1
                     
                     bloque_final.append([
-                        str(row["N°"]), str(row["TAREO PERSONAL"]), str(row["CARGO"]), 
+                        num_fila, str(row["TAREO PERSONAL"]), str(row["CARGO"]), 
                         mostrar_num(horas_limpias[0]), mostrar_num(horas_limpias[1]), 
                         mostrar_num(horas_limpias[2]), mostrar_num(horas_limpias[3]), 
                         mostrar_num(horas_limpias[4]), mostrar_num(total_fila)
@@ -304,10 +313,12 @@ with tab2:
             filas_datos_b3 = 0
 
             if not df_equipos.empty:
-                for index, row in df_equipos.iterrows():
+                df_equipos.reset_index(drop=True, inplace=True)
+                for i, row in df_equipos.iterrows():
+                    num_fila = str(i + 1)
                     horas_limpias = []
-                    for i in range(1, 6):
-                        val = row.get(f"ACT.{i}", "")
+                    for j in range(1, 6):
+                        val = row.get(f"ACT.{j}", "")
                         try:
                             horas_limpias.append(float(val) if val != "" else 0.0)
                         except:
@@ -317,7 +328,7 @@ with tab2:
                     filas_datos_b3 += 1
                     
                     bloque_final.append([
-                        str(row["N°"]), str(row["DESCRIPCION DE EQUIPOS"]), str(row["CODIGO/PLACA"]), 
+                        num_fila, str(row["DESCRIPCION DE EQUIPOS"]), str(row["CODIGO/PLACA"]), 
                         mostrar_num(horas_limpias[0]), mostrar_num(horas_limpias[1]), 
                         mostrar_num(horas_limpias[2]), mostrar_num(horas_limpias[3]), 
                         mostrar_num(horas_limpias[4]), mostrar_num(total_fila)
@@ -336,10 +347,12 @@ with tab2:
             filas_datos_b3_1 = 0
 
             if not df_materiales.empty:
-                for index, row in df_materiales.iterrows():
+                df_materiales.reset_index(drop=True, inplace=True)
+                for i, row in df_materiales.iterrows():
+                    num_fila = str(i + 1)
                     cantidades_limpias = []
-                    for i in range(1, 6):
-                        val = row.get(f"ACT.{i}", "")
+                    for j in range(1, 6):
+                        val = row.get(f"ACT.{j}", "")
                         try:
                             cantidades_limpias.append(float(val) if val != "" else 0.0)
                         except:
@@ -349,7 +362,7 @@ with tab2:
                     filas_datos_b3_1 += 1
                     
                     bloque_final.append([
-                        str(row["N°"]), str(row["DESCRIPCION DE LOS MATERIALES"]), str(row["UNIDAD"]), 
+                        num_fila, str(row["DESCRIPCION DE LOS MATERIALES"]), str(row["UNIDAD"]), 
                         mostrar_num(cantidades_limpias[0]), mostrar_num(cantidades_limpias[1]), 
                         mostrar_num(cantidades_limpias[2]), mostrar_num(cantidades_limpias[3]), 
                         mostrar_num(cantidades_limpias[4]), mostrar_num(total_fila)
