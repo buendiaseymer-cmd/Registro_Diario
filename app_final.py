@@ -111,7 +111,7 @@ with tab2:
         # BLOQUE 1: ACTIVIDADES
         # ==========================================
         st.markdown("---")
-        st.markdown("#### BLOQUE 1: Actividades")
+        st.markdown("#### Actividades")
 
         def crear_tabla_actividades():
             columnas = ["ACT.", "NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA DEL", "PROGRESIVA AL", "LADO", "FASE"]
@@ -131,7 +131,7 @@ with tab2:
         # BLOQUE 2: TAREO DE PERSONAL
         # ==========================================
         st.markdown("---")
-        st.markdown("#### BLOQUE 2: Tareo de Personal")
+        st.markdown("#### Tareo de Personal")
         
         def crear_tabla_tareo():
             columnas = ["N°", "TAREO PERSONAL", "CARGO", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
@@ -157,7 +157,7 @@ with tab2:
         # BLOQUE 3: EQUIPOS
         # ==========================================
         st.markdown("---")
-        st.markdown("#### BLOQUE 3: Equipos")
+        st.markdown("#### Equipos")
 
         def crear_tabla_equipos():
             columnas = ["N°", "DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
@@ -175,7 +175,7 @@ with tab2:
         # BLOQUE 3.1: MATERIALES (METRADO)
         # ==========================================
         st.markdown("---")
-        st.markdown("#### BLOQUE 3.1: Materiales (metrado)")
+        st.markdown("#### Materiales (metrado)")
 
         def crear_tabla_materiales():
             columnas = ["N°", "DESCRIPCION DE LOS MATERIALES", "UNIDAD", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
