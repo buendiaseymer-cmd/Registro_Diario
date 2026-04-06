@@ -56,11 +56,6 @@ if not verificar_autenticacion():
 # ---- A PARTIR DE AQUÍ TODO EL CÓDIGO ORIGINAL (PROTEGIDO) ----
 # Solo se ejecuta si el login fue exitoso
 
-# Opcional: botón de cerrar sesión en la barra lateral
-with st.sidebar:
-    if st.button("🚪 Cerrar sesión"):
-        st.session_state.authenticated = False
-        st.rerun()
 
 # ========== TU CÓDIGO ORIGINAL (sin cambios) ==========
 @st.cache_resource
