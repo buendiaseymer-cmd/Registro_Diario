@@ -5,8 +5,64 @@ import datetime
 import json
 import pandas as pd
 
+# ---- CONFIGURACIÓN DE LA PÁGINA (siempre primero) ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
 
+# ---- SISTEMA DE LOGIN ----
+def verificar_autenticacion():
+    """
+    Controla el acceso mediante contraseña general.
+    La contraseña se lee desde st.secrets (recomendado) o desde una variable.
+    """
+    # Inicializar estado de autenticación
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+
+    # Si ya está autenticado, no mostramos el login
+    if st.session_state.authenticated:
+        return True
+
+    # Mostrar formulario de login
+    st.markdown("<h2 style='text-align: center;'>🔐 Acceso restringido</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Ingrese la contraseña general para continuar</p>", unsafe_allow_html=True)
+
+    with st.form("login_form"):
+        password = st.text_input("Contraseña", type="password")
+        submit = st.form_submit_button("Ingresar", use_container_width=True)
+
+        if submit:
+            # 🔑 Obtener la contraseña desde los secretos (recomendado)
+            # Asegúrate de tener en .streamlit/secrets.toml: general_password = "tu_clave"
+            try:
+                correct_password = st.secrets["general_password"]
+            except:
+                # Fallback: si no usas secrets, define aquí la contraseña (menos seguro)
+                # correct_password = "admin123"  # <-- cambia por tu contraseña
+                st.error("❌ No se encontró la contraseña en los secretos. Configura 'general_password' en .streamlit/secrets.toml")
+                return False
+
+            if password == correct_password:
+                st.session_state.authenticated = True
+                st.success("✅ Acceso concedido")
+                st.rerun()  # Recarga la página para mostrar el contenido
+            else:
+                st.error("❌ Contraseña incorrecta")
+    return False
+
+# ---- BLOQUE DE AUTENTICACIÓN ----
+if not verificar_autenticacion():
+    st.stop()  # Detiene la ejecución si no está autenticado
+
+# ---- A PARTIR DE AQUÍ TODO EL CÓDIGO ORIGINAL (PROTEGIDO) ----
+# Solo se ejecuta si el login fue exitoso
+
+# Opcional: botón de cerrar sesión en la barra lateral
+with st.sidebar:
+    if st.button("🚪 Cerrar sesión"):
+        st.session_state.authenticated = False
+        st.rerun()
+
+# ========== TU CÓDIGO ORIGINAL (sin cambios) ==========
 @st.cache_resource
 def conectar_google_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -75,7 +131,6 @@ with tab1:
             st.error("⚠️ El horómetro final no puede ser menor al inicial.")
         else:
             total_horas = round(final_horometro - inicio_horometro, 2)
-            # Nota: %y genera el año en dos dígitos (ej. 26). Si quieres 2026, usa %Y
             fecha_str = fecha.strftime("%d/%m/%Y") 
             
             fila_nueva = [codigo_interno, codigo_equipo, operador, fecha_str, guardia_turno, 
@@ -84,7 +139,6 @@ with tab1:
                 hoja_reporte.append_row(fila_nueva, value_input_option='USER_ENTERED')
                 st.success("✅ ¡Ficha guardada con éxito!")
             except Exception as e:
-                # AQUÍ ESTÁ EL CAMBIO CLAVE: Ahora verás exactamente por qué falla
                 st.error(f"❌ Falló al enviar. Detalle del error: {e}")
 
 # ---------------------------------------------------------------------
@@ -126,16 +180,15 @@ with tab2:
         st.markdown("#### Actividades")
 
         def crear_tabla_actividades():
-            # Eliminamos la columna manual "ACT." para usar el índice automático
             columnas = ["NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA DEL", "PROGRESIVA AL", "LADO", "FASE"]
             df = pd.DataFrame(columns=columnas)
             for _ in range(3):
                 df.loc[len(df)] = ["", "", None, "", "", "", ""]
-            df.index = [1, 2, 3] # Inicializamos la numeración
+            df.index = [1, 2, 3]
             return df
 
         columnas_act = {
-            "_index": st.column_config.Column("ACT.", pinned=True, disabled=True), # Usamos la columna fantasma
+            "_index": st.column_config.Column("ACT.", pinned=True, disabled=True),
             "NOMBRE DE LA ACTIVIDAD": st.column_config.Column(pinned=True),
             "CANT.": st.column_config.NumberColumn("CANT.", format="%.2f")
         }
@@ -152,7 +205,6 @@ with tab2:
         st.markdown("#### Tareo de Personal")
         
         def crear_tabla_tareo():
-            # Eliminamos la columna manual "N°"
             columnas = ["TAREO PERSONAL", "CARGO", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
             df = pd.DataFrame(columns=columnas)
             for _ in range(3):
@@ -257,9 +309,9 @@ with tab2:
             bloque_final.append(["", "", "", "", "DEL", "AL", "", "", ""])
             
             if not df_actividades.empty:
-                df_actividades.reset_index(drop=True, inplace=True) # Reseteamos para evitar huecos si se borró una fila
+                df_actividades.reset_index(drop=True, inplace=True)
                 for i, row in df_actividades.iterrows():
-                    num_act = str(i + 1) # Numeración perfecta 1, 2, 3...
+                    num_act = str(i + 1)
                     fila_limpia = [num_act] + [float(x) if isinstance(x, (int, float)) else str(x) for x in row]
                     fila_limpia.append("") 
                     bloque_final.append(fila_limpia)
@@ -377,10 +429,8 @@ with tab2:
 
             # --- ENVÍO Y FORMATO A EXCEL ---
             try:
-                # 1. Insertar datos
                 respuesta = hoja_costos.append_rows(bloque_final, value_input_option='USER_ENTERED')
                 
-                # 2. Calcular coordenadas base
                 rango_actualizado = respuesta.get('updates', {}).get('updatedRange', '')
                 celda_inicio = rango_actualizado.split('!')[1].split(':')[0] 
                 fila_inicio = int(''.join(filter(str.isdigit, celda_inicio))) 
@@ -394,7 +444,7 @@ with tab2:
                 f_tit_b1_2 = fila_inicio + 7
                 f_fin_b1 = f_tit_b1_2 + (len(df_actividades) if not df_actividades.empty else 1)
                 
-                hoja_costos.merge_cells(f"E{f_tit_b1_1}:F{f_tit_b1_1}") # PROGRESIVA
+                hoja_costos.merge_cells(f"E{f_tit_b1_1}:F{f_tit_b1_1}")
                 for col in ["A", "B", "C", "D", "G", "H"]:
                     hoja_costos.merge_cells(f"{col}{f_tit_b1_1}:{col}{f_tit_b1_2}")
                 
