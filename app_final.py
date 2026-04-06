@@ -121,7 +121,7 @@ with tab2:
         # BLOQUE 1: ACTIVIDADES
         # ==========================================
         st.markdown("---")
-        st.markdown("#### BLOQUE 1: Actividades")
+        st.markdown("#### Actividades")
 
         def crear_tabla_actividades():
             # Eliminamos la columna manual "ACT." para usar el índice automático
@@ -147,7 +147,7 @@ with tab2:
         # BLOQUE 2: TAREO DE PERSONAL
         # ==========================================
         st.markdown("---")
-        st.markdown("#### BLOQUE 2: Tareo de Personal")
+        st.markdown("#### Tareo de Personal")
         
         def crear_tabla_tareo():
             # Eliminamos la columna manual "N°"
@@ -173,7 +173,7 @@ with tab2:
         # BLOQUE 3: EQUIPOS
         # ==========================================
         st.markdown("---")
-        st.markdown("#### BLOQUE 3: Equipos")
+        st.markdown("#### Equipos")
 
         def crear_tabla_equipos():
             columnas = ["DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
@@ -198,7 +198,7 @@ with tab2:
         # BLOQUE 3.1: MATERIALES (METRADO)
         # ==========================================
         st.markdown("---")
-        st.markdown("#### BLOQUE 3.1: Materiales (metrado)")
+        st.markdown("#### Materiales (metrado)")
 
         def crear_tabla_materiales():
             columnas = ["DESCRIPCION DE LOS MATERIALES", "UNIDAD", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
