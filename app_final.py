@@ -75,15 +75,17 @@ with tab1:
             st.error("⚠️ El horómetro final no puede ser menor al inicial.")
         else:
             total_horas = round(final_horometro - inicio_horometro, 2)
-            fecha_str = fecha.strftime("%d/%m/%y")
-            # En Pestaña 1 también aplicamos USER_ENTERED para que total_horas y horómetros sean números
+            # Nota: %y genera el año en dos dígitos (ej. 26). Si quieres 2026, usa %Y
+            fecha_str = fecha.strftime("%d/%m/%Y") 
+            
             fila_nueva = [codigo_interno, codigo_equipo, operador, fecha_str, guardia_turno, 
                           inicio_horometro, final_horometro, actividad, total_horas, fase, "", frente_trabajo, ""]
             try:
                 hoja_reporte.append_row(fila_nueva, value_input_option='USER_ENTERED')
                 st.success("✅ ¡Ficha guardada con éxito!")
             except Exception as e:
-                st.error("❌ Falló la conexión al enviar. Reintenta.")
+                # AQUÍ ESTÁ EL CAMBIO CLAVE: Ahora verás exactamente por qué falla
+                st.error(f"❌ Falló al enviar. Detalle del error: {e}")
 
 # ---------------------------------------------------------------------
 # PESTAÑA 2: HOJA DE PRODUCCIÓN (AUTO-NUMERADA)
