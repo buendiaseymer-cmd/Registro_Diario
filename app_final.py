@@ -141,7 +141,6 @@ with tab2:
                 df.loc[len(df)] = ["", "", "", None, None, None, None, None]
             return df
 
-        # Configuramos las columnas de actividades para que solo acepten números
         columnas_tareo = {
             "ACT.1": st.column_config.NumberColumn("ACT.1"),
             "ACT.2": st.column_config.NumberColumn("ACT.2"),
@@ -173,7 +172,7 @@ with tab2:
             fecha_str = fecha_prod.strftime("%d/%m/%Y")
             bloque_final = []
             
-            # --- CONSTRUCCIÓN DEL EXCEL (Padded a 9 columnas por el Bloque 2) ---
+            # --- CONSTRUCCIÓN DEL EXCEL ---
             bloque_final.append(["", "FECHA:", fecha_str, "", "", "", "", "", ""])
             bloque_final.append(["", "TURNO:", turno_prod, "", "", "", "", "", ""])
             bloque_final.append(["", "JEFE DE GRUPO:", jefe_grupo_prod, "", "", "", "", "", ""])
@@ -186,46 +185,57 @@ with tab2:
             bloque_final.append(["", "", "", "", "DEL", "AL", "", "", ""])
             
             if not df_actividades.empty:
+                # Nos aseguramos de convertir todo a tipos nativos
                 for row in df_actividades.values.tolist():
-                    row.append("") # Columna 9 vacía
-                    bloque_final.append(row)
+                    fila_limpia = [float(x) if isinstance(x, (int, float)) else str(x) for x in row]
+                    fila_limpia.append("") # Columna 9 vacía
+                    bloque_final.append(fila_limpia)
             else:
                 bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
             
             bloque_final.append(["", "", "", "", "", "", "", "", ""]) # Espacio separador
-            len_b1 = len(bloque_final) # Guardamos dónde termina el bloque 1
+            len_b1 = len(bloque_final) 
 
             # BLOQUE 2
             bloque_final.append(["N°", "TAREO PERSONAL", "CARGO", "HORAS TRABAJADAS POR ACTIVIDAD", "", "", "", "", "TOTAL HORAS"])
             bloque_final.append(["", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
             
-            suma_total_horas = 0
+            suma_total_horas = 0.0 # Iniciamos como float nativo
             filas_datos_b2 = 0
 
             if not df_tareo.empty:
                 for index, row in df_tareo.iterrows():
-                    # Extraer horas y sumar
-                    horas = [pd.to_numeric(row[f"ACT.{i}"], errors='coerce') for i in range(1, 6)]
-                    horas_limpias = [h if pd.notna(h) else 0 for h in horas]
+                    horas_limpias = []
+                    # Extracción segura a float nativo
+                    for i in range(1, 6):
+                        val = row.get(f"ACT.{i}", "")
+                        try:
+                            horas_limpias.append(float(val) if val != "" else 0.0)
+                        except:
+                            horas_limpias.append(0.0)
+                    
                     total_fila = sum(horas_limpias)
                     suma_total_horas += total_fila
                     filas_datos_b2 += 1
                     
+                    def mostrar_hora(h):
+                        return h if h > 0 else ""
+                    
                     bloque_final.append([
-                        row["N°"], row["TAREO PERSONAL"], row["CARGO"], 
-                        horas_limpias[0] if horas_limpias[0] else "", 
-                        horas_limpias[1] if horas_limpias[1] else "", 
-                        horas_limpias[2] if horas_limpias[2] else "", 
-                        horas_limpias[3] if horas_limpias[3] else "", 
-                        horas_limpias[4] if horas_limpias[4] else "", 
-                        total_fila if total_fila else ""
+                        str(row["N°"]), str(row["TAREO PERSONAL"]), str(row["CARGO"]), 
+                        mostrar_hora(horas_limpias[0]), 
+                        mostrar_hora(horas_limpias[1]), 
+                        mostrar_hora(horas_limpias[2]), 
+                        mostrar_hora(horas_limpias[3]), 
+                        mostrar_hora(horas_limpias[4]), 
+                        mostrar_hora(total_fila)
                     ])
             else:
                 bloque_final.append(["", "", "", "", "", "", "", "", ""])
                 filas_datos_b2 = 1
                 
             # Fila Final del Bloque 2
-            bloque_final.append(["", "TOTAL", "", "", "", "", "", "", suma_total_horas])
+            bloque_final.append(["", "TOTAL", "", "", "", "", "", "", suma_total_horas if suma_total_horas > 0 else ""])
             bloque_final.append(["", "", "", "", "", "", "", "", ""]) # Espacio final
 
             try:
