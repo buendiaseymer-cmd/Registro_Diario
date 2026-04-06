@@ -86,7 +86,7 @@ with tab1:
                 st.error("❌ Falló la conexión al enviar. Reintenta.")
 
 # ---------------------------------------------------------------------
-# PESTAÑA 2: HOJA DE PRODUCCIÓN (BLOQUE 1 Y 2)
+# PESTAÑA 2: HOJA DE PRODUCCIÓN (BLOQUES 1, 2 Y 3)
 # ---------------------------------------------------------------------
 with tab2:
     st.markdown("<h3 style='text-align: center;'>Hoja de Producción</h3>", unsafe_allow_html=True)
@@ -106,22 +106,22 @@ with tab2:
     with col5:
         frente_prod = st.text_input("FRENTE DE TRABAJO *", key="frente_prod").upper()
 
-    # ==========================================
-    # BLOQUE 1: ACTIVIDADES
-    # ==========================================
-    st.markdown("---")
-    st.markdown("#### BLOQUE 1: Actividades")
-
-    def crear_tabla_actividades():
-        columnas = ["ACT.", "NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA DEL", "PROGRESIVA AL", "LADO", "FASE"]
-        df = pd.DataFrame(columns=columnas)
-        for _ in range(3):
-            df.loc[len(df)] = ["", "", "", None, "", "", "", ""]
-        return df
-
-    columnas_act = {"CANT.": st.column_config.NumberColumn("CANT.", format="%.2f")}
-
     with st.form("form_produccion", clear_on_submit=True):
+        # ==========================================
+        # BLOQUE 1: ACTIVIDADES
+        # ==========================================
+        st.markdown("---")
+        st.markdown("#### BLOQUE 1: Actividades")
+
+        def crear_tabla_actividades():
+            columnas = ["ACT.", "NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA DEL", "PROGRESIVA AL", "LADO", "FASE"]
+            df = pd.DataFrame(columns=columnas)
+            for _ in range(3):
+                df.loc[len(df)] = ["", "", "", None, "", "", "", ""]
+            return df
+
+        columnas_act = {"CANT.": st.column_config.NumberColumn("CANT.", format="%.2f")}
+
         df_actividades = st.data_editor(
             crear_tabla_actividades(), 
             num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_act
@@ -132,16 +132,15 @@ with tab2:
         # ==========================================
         st.markdown("---")
         st.markdown("#### BLOQUE 2: Tareo de Personal")
-        st.markdown("<p style='font-size: 13px; color: gray;'>* Los totales por persona y el total general se calcularán automáticamente en el Excel.</p>", unsafe_allow_html=True)
-
+        
         def crear_tabla_tareo():
             columnas = ["N°", "TAREO PERSONAL", "CARGO", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
             df = pd.DataFrame(columns=columnas)
-            for _ in range(5):
+            for _ in range(3):
                 df.loc[len(df)] = ["", "", "", None, None, None, None, None]
             return df
 
-        columnas_tareo = {
+        columnas_horas = {
             "ACT.1": st.column_config.NumberColumn("ACT.1"),
             "ACT.2": st.column_config.NumberColumn("ACT.2"),
             "ACT.3": st.column_config.NumberColumn("ACT.3"),
@@ -151,7 +150,26 @@ with tab2:
 
         df_tareo = st.data_editor(
             crear_tabla_tareo(), 
-            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_tareo
+            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_horas
+        )
+
+        # ==========================================
+        # BLOQUE 3: EQUIPOS
+        # ==========================================
+        st.markdown("---")
+        st.markdown("#### BLOQUE 3: Equipos")
+        st.markdown("<p style='font-size: 13px; color: gray;'>* Los totales de horas en personal y equipos se calcularán automáticamente en el Excel.</p>", unsafe_allow_html=True)
+
+        def crear_tabla_equipos():
+            columnas = ["N°", "DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
+            df = pd.DataFrame(columns=columnas)
+            for _ in range(3):
+                df.loc[len(df)] = ["", "", "", None, None, None, None, None]
+            return df
+
+        df_equipos = st.data_editor(
+            crear_tabla_equipos(), 
+            num_rows="dynamic", use_container_width=True, hide_index=True, column_config=columnas_horas
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -169,6 +187,10 @@ with tab2:
             df_tareo = df_tareo.fillna("")
             df_tareo = df_tareo[df_tareo["TAREO PERSONAL"] != ""]
 
+            # Limpieza Bloque 3
+            df_equipos = df_equipos.fillna("")
+            df_equipos = df_equipos[df_equipos["DESCRIPCION DE EQUIPOS"] != ""]
+
             fecha_str = fecha_prod.strftime("%d/%m/%Y")
             bloque_final = []
             
@@ -180,33 +202,34 @@ with tab2:
             bloque_final.append(["", "FRENTE:", frente_prod, "", "", "", "", "", ""])
             bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
             
-            # BLOQUE 1
+            # --- DATOS BLOQUE 1 ---
             bloque_final.append(["ACT.", "NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA", "", "LADO", "FASE", ""])
             bloque_final.append(["", "", "", "", "DEL", "AL", "", "", ""])
             
             if not df_actividades.empty:
-                # Nos aseguramos de convertir todo a tipos nativos
                 for row in df_actividades.values.tolist():
                     fila_limpia = [float(x) if isinstance(x, (int, float)) else str(x) for x in row]
-                    fila_limpia.append("") # Columna 9 vacía
+                    fila_limpia.append("") # Columna 9
                     bloque_final.append(fila_limpia)
             else:
                 bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
             
-            bloque_final.append(["", "", "", "", "", "", "", "", ""]) # Espacio separador
+            bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
             len_b1 = len(bloque_final) 
 
-            # BLOQUE 2
+            # Función de ayuda para horas
+            def mostrar_hora(h): return h if h > 0 else ""
+
+            # --- DATOS BLOQUE 2 ---
             bloque_final.append(["N°", "TAREO PERSONAL", "CARGO", "HORAS TRABAJADAS POR ACTIVIDAD", "", "", "", "", "TOTAL HORAS"])
             bloque_final.append(["", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
             
-            suma_total_horas = 0.0 # Iniciamos como float nativo
+            suma_total_horas_personal = 0.0
             filas_datos_b2 = 0
 
             if not df_tareo.empty:
                 for index, row in df_tareo.iterrows():
                     horas_limpias = []
-                    # Extracción segura a float nativo
                     for i in range(1, 6):
                         val = row.get(f"ACT.{i}", "")
                         try:
@@ -215,42 +238,69 @@ with tab2:
                             horas_limpias.append(0.0)
                     
                     total_fila = sum(horas_limpias)
-                    suma_total_horas += total_fila
+                    suma_total_horas_personal += total_fila
                     filas_datos_b2 += 1
-                    
-                    def mostrar_hora(h):
-                        return h if h > 0 else ""
                     
                     bloque_final.append([
                         str(row["N°"]), str(row["TAREO PERSONAL"]), str(row["CARGO"]), 
-                        mostrar_hora(horas_limpias[0]), 
-                        mostrar_hora(horas_limpias[1]), 
-                        mostrar_hora(horas_limpias[2]), 
-                        mostrar_hora(horas_limpias[3]), 
-                        mostrar_hora(horas_limpias[4]), 
-                        mostrar_hora(total_fila)
+                        mostrar_hora(horas_limpias[0]), mostrar_hora(horas_limpias[1]), 
+                        mostrar_hora(horas_limpias[2]), mostrar_hora(horas_limpias[3]), 
+                        mostrar_hora(horas_limpias[4]), mostrar_hora(total_fila)
                     ])
             else:
                 bloque_final.append(["", "", "", "", "", "", "", "", ""])
                 filas_datos_b2 = 1
                 
-            # Fila Final del Bloque 2
-            bloque_final.append(["", "TOTAL", "", "", "", "", "", "", suma_total_horas if suma_total_horas > 0 else ""])
+            bloque_final.append(["", "TOTAL", "", "", "", "", "", "", mostrar_hora(suma_total_horas_personal)])
+            bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
+            len_b2 = len(bloque_final)
+
+            # --- DATOS BLOQUE 3 ---
+            bloque_final.append(["N°", "DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "HORAS TRABAJADAS POR ACTIVIDAD", "", "", "", "", "TOTAL HORAS"])
+            bloque_final.append(["", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
+            
+            filas_datos_b3 = 0
+
+            if not df_equipos.empty:
+                for index, row in df_equipos.iterrows():
+                    horas_limpias = []
+                    for i in range(1, 6):
+                        val = row.get(f"ACT.{i}", "")
+                        try:
+                            horas_limpias.append(float(val) if val != "" else 0.0)
+                        except:
+                            horas_limpias.append(0.0)
+                    
+                    total_fila = sum(horas_limpias)
+                    filas_datos_b3 += 1
+                    
+                    bloque_final.append([
+                        str(row["N°"]), str(row["DESCRIPCION DE EQUIPOS"]), str(row["CODIGO/PLACA"]), 
+                        mostrar_hora(horas_limpias[0]), mostrar_hora(horas_limpias[1]), 
+                        mostrar_hora(horas_limpias[2]), mostrar_hora(horas_limpias[3]), 
+                        mostrar_hora(horas_limpias[4]), mostrar_hora(total_fila)
+                    ])
+            else:
+                bloque_final.append(["", "", "", "", "", "", "", "", ""])
+                filas_datos_b3 = 1
+                
             bloque_final.append(["", "", "", "", "", "", "", "", ""]) # Espacio final
 
+            # --- ENVÍO Y FORMATO A EXCEL ---
             try:
                 # 1. Insertar datos
                 respuesta = hoja_costos.append_rows(bloque_final, value_input_option='USER_ENTERED')
                 
-                # 2. Calcular coordenadas
+                # 2. Calcular coordenadas base
                 rango_actualizado = respuesta.get('updates', {}).get('updatedRange', '')
                 celda_inicio = rango_actualizado.split('!')[1].split(':')[0] 
                 fila_inicio = int(''.join(filter(str.isdigit, celda_inicio))) 
                 
-                # --- FORMATO BLOQUE 1 ---
+                # --- FORMATO CABECERA ---
                 hoja_costos.format(f"B{fila_inicio}:B{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
                 hoja_costos.format(f"C{fila_inicio}:C{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "LEFT"})
 
+                # --- FORMATO BLOQUE 1 ---
                 f_tit_b1_1 = fila_inicio + 6
                 f_tit_b1_2 = fila_inicio + 7
                 f_fin_b1 = f_tit_b1_2 + (len(df_actividades) if not df_actividades.empty else 1)
@@ -266,21 +316,29 @@ with tab2:
                 f_ini_b2 = fila_inicio + len_b1
                 f_fin_b2 = f_ini_b2 + 1 + filas_datos_b2
                 
-                # Celdas combinadas de cabecera B2
                 hoja_costos.merge_cells(f"D{f_ini_b2}:H{f_ini_b2}") # HORAS TRABAJADAS POR ACT
                 for col in ["A", "B", "C", "I"]:
                     hoja_costos.merge_cells(f"{col}{f_ini_b2}:{col}{f_ini_b2+1}")
                 
                 hoja_costos.format(f"A{f_ini_b2}:I{f_ini_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                
-                # Fondo verde para datos B2
                 hoja_costos.format(f"A{f_ini_b2+2}:I{f_fin_b2}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
                 
-                # Fila inferior de TOTAL
-                hoja_costos.merge_cells(f"A{f_fin_b2}:H{f_fin_b2}")
-                hoja_costos.format(f"A{f_fin_b2}:I{f_fin_b2}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER"})
+                # Fila inferior de TOTAL Bloque 2
+                hoja_costos.merge_cells(f"A{f_fin_b2+1}:H{f_fin_b2+1}")
+                hoja_costos.format(f"A{f_fin_b2+1}:I{f_fin_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER"})
 
-                st.success("✅ ¡Bloques 1 y 2 enviados y formateados con éxito!")
+                # --- FORMATO BLOQUE 3 ---
+                f_ini_b3 = fila_inicio + len_b2
+                f_fin_b3 = f_ini_b3 + 1 + filas_datos_b3
+                
+                hoja_costos.merge_cells(f"D{f_ini_b3}:H{f_ini_b3}") # HORAS TRABAJADAS POR ACT
+                for col in ["A", "B", "C", "I"]:
+                    hoja_costos.merge_cells(f"{col}{f_ini_b3}:{col}{f_ini_b3+1}")
+                
+                hoja_costos.format(f"A{f_ini_b3}:I{f_ini_b3+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                hoja_costos.format(f"A{f_ini_b3+2}:I{f_fin_b3}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+
+                st.success("✅ ¡La Hoja de Producción completa se guardó y formateó correctamente en Excel!")
             except Exception as e:
                 st.error(f"❌ Falló la conexión al enviar o dar formato. Error: {e}")
 
