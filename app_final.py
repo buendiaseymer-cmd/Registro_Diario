@@ -221,7 +221,7 @@ with tab2:
             df.index = [1, 2, 3]
             return df
 
-        # --- OPCIÓN PARA AGREGAR PERSONAL MANUALMENTE ---
+        # --- 1. EXPANDER DE AGREGAR PERSONAL (ESTRICTAMENTE FUERA DEL FORMULARIO) ---
         with st.expander("➕ ¿Falta alguien? Agregar personal no registrado"):
             col_d, col_n, col_b = st.columns([2, 3, 1])
             with col_d: 
@@ -229,37 +229,58 @@ with tab2:
             with col_n: 
                 nuevo_nombre = st.text_input("Nombre Nuevo").upper()
             with col_b: 
-                st.markdown("<br>", unsafe_allow_html=True) # Espacio para alinear el botón
-                if st.form_submit_button("Añadir a la lista", use_container_width=True):
+                st.markdown("<br>", unsafe_allow_html=True) 
+                # Al estar fuera del form, usamos st.button sin que dé error
+                if st.button("Añadir a la lista", use_container_width=True):
                     if nuevo_dni and nuevo_nombre:
                         nuevo_registro = f"{nuevo_dni} - {nuevo_nombre}"
                         if nuevo_registro not in st.session_state["lista_personal"]:
-                            # Lo agregamos al inicio de la lista para encontrarlo rápido
                             st.session_state["lista_personal"].insert(0, nuevo_registro) 
                             st.success("✅ Agregado temporalmente")
-                            st.rerun() # Recargamos para que aparezca en la tabla
+                            st.rerun() 
                     else:
                         st.warning("Escribe DNI y Nombre")
 
-        columnas_tareo = {
-            "_index": st.column_config.Column("N°", pinned=True, disabled=True),
+        # --- 2. APERTURA DEL FORMULARIO PRINCIPAL PARA GUARDAR LOS DATOS ---
+        # (Si ya tenías un st.form abierto arriba de este bloque, asegúrate de cerrarlo
+        # y abrir uno nuevo a partir de aquí para englobar tu tabla).
+        with st.form("formulario_hoja_produccion", clear_on_submit=True):
             
-            # Usamos st.session_state["lista_personal"] para que tome los agregados manualmente
-            "TAREO PERSONAL": st.column_config.SelectboxColumn(
-                "TAREO PERSONAL", 
-                help="Haz doble clic y escribe el DNI o Nombre para buscar",
-                options=st.session_state["lista_personal"], 
-                required=True
-            ),
+            columnas_tareo = {
+                "_index": st.column_config.Column("N°", pinned=True, disabled=True),
+                "TAREO PERSONAL": st.column_config.SelectboxColumn(
+                    "TAREO PERSONAL", 
+                    help="Haz doble clic y escribe el DNI o Nombre para buscar",
+                    options=st.session_state["lista_personal"], 
+                    required=True
+                ),
+                "CARGO": st.column_config.Column("CARGO"),
+                **columnas_base_horas # Asegúrate de que esta variable exista más arriba en tu código
+            }
             
-            "CARGO": st.column_config.Column("CARGO"),
-            **columnas_base_horas
-        }
-        
-        df_tareo = st.data_editor(
-            crear_tabla_tareo(), 
-            num_rows="dynamic", use_container_width=True, column_config=columnas_tareo
-        )
+            # La tabla de Streamlit (st.data_editor)
+            df_tareo = st.data_editor(
+                crear_tabla_tareo(), 
+                num_rows="dynamic", 
+                use_container_width=True, 
+                column_config=columnas_tareo
+            )
+            
+            # ==========================================
+            # AQUÍ DEBES PEGAR TUS DEMÁS BLOQUES SI LOS TIENES
+            # (Ej. Bloque 3: Equipos, Bloque 4: Materiales, etc.)
+            # ==========================================
+            
+            
+            # ==========================================
+            # BOTÓN FINAL DEL FORMULARIO (PARA MANDAR A GOOGLE SHEETS)
+            # ==========================================
+            enviado_produccion = st.form_submit_button("Guardar Hoja de Producción", type="primary", use_container_width=True)
+            
+        # --- FUERA DEL FORMULARIO: LÓGICA DE GUARDADO ---
+        if enviado_produccion:
+            st.success("Lógica de guardado a Google Sheets aquí...")
+            # Aquí va tu código de hoja_reporte.append_row(...)
 
         # ==========================================
         # BLOQUE 3: EQUIPOS
