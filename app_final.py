@@ -192,6 +192,32 @@ with tab2:
         frente_prod = st.text_input("FRENTE DE TRABAJO *", key="frente_prod").upper()
 
     # ==========================================
+    # --- PREPARACIÓN PARA EL BLOQUE 2 (FUERA DEL FORMULARIO) ---
+    # ==========================================
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.info("💡 **Preparación para el Tareo (Bloque 2):** Si un trabajador no está en la lista desplegable, agrégalo aquí antes de empezar a llenar las tablas.")
+    
+    with st.expander("➕ Agregar personal no registrado"):
+        col_d, col_n, col_b = st.columns([2, 3, 1])
+        with col_d: 
+            nuevo_dni = st.text_input("DNI Nuevo", key="tab2_dni")
+        with col_n: 
+            nuevo_nombre = st.text_input("Nombre Nuevo", key="tab2_nombre").upper()
+        with col_b: 
+            st.markdown("<br>", unsafe_allow_html=True) 
+            if st.button("Añadir a la lista", use_container_width=True, key="btn_agregar_tab2"):
+                if nuevo_dni and nuevo_nombre:
+                    nuevo_registro = f"{nuevo_dni} - {nuevo_nombre}"
+                    if nuevo_registro not in st.session_state["lista_personal"]:
+                        st.session_state["lista_personal"].insert(0, nuevo_registro) 
+                        st.success(f"✅ {nuevo_nombre} agregado temporalmente para este registro.")
+                        st.rerun() 
+                else:
+                    st.warning("Escribe DNI y Nombre")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ==========================================
     # --- APERTURA DEL FORMULARIO PRINCIPAL ---
     # ==========================================
     with st.form("form_produccion", clear_on_submit=True):
@@ -208,7 +234,6 @@ with tab2:
         # ==========================================
         # BLOQUE 1: ACTIVIDADES
         # ==========================================
-        st.markdown("---")
         st.markdown("#### Actividades")
 
         def crear_tabla_actividades():
@@ -312,11 +337,10 @@ with tab2:
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
-        # Este es el ÚNICO botón que envía el formulario
         enviado_prod = st.form_submit_button("Guardar Hoja de Producción", use_container_width=True, type="primary")
 
     # ==========================================
-    # --- LÓGICA DE GUARDADO (FUERA DEL FORMULARIO) ---
+    # --- LÓGICA DE GUARDADO ---
     # ==========================================
     if enviado_prod:
         if not jefe_grupo_prod or not tramo_prod or not frente_prod:
