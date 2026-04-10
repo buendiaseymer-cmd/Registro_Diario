@@ -18,6 +18,26 @@ def cargar_bd_personal():
 if "lista_personal" not in st.session_state:
     st.session_state["lista_personal"] = cargar_bd_personal()
 
+# ==========================================
+# MENÚ LATERAL (SIDEBAR) - AGREGAR PERSONAL
+# ==========================================
+with st.sidebar:
+    st.markdown("### 👷‍♂️ Gestión Rápida")
+    with st.expander("➕ Agregar personal no registrado"):
+        nuevo_dni = st.text_input("DNI Nuevo", key="sidebar_dni")
+        nuevo_nombre = st.text_input("Nombre Nuevo", key="sidebar_nombre").upper()
+        
+        # Al estar en el sidebar y fuera del st.form principal, usamos st.button normal
+        if st.button("Añadir a la lista", use_container_width=True, key="btn_agregar_sidebar"):
+            if nuevo_dni and nuevo_nombre:
+                nuevo_registro = f"{nuevo_dni} - {nuevo_nombre}"
+                if nuevo_registro not in st.session_state["lista_personal"]:
+                    st.session_state["lista_personal"].insert(0, nuevo_registro) 
+                    st.success("✅ Agregado temporalmente")
+                    st.rerun() 
+            else:
+                st.warning("Escribe DNI y Nombre")
+
 lista_personal = cargar_bd_personal()
 # ---- CONFIGURACIÓN DE LA PÁGINA (siempre primero) ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
@@ -171,31 +191,8 @@ with tab2:
     with col5:
         frente_prod = st.text_input("FRENTE DE TRABAJO *", key="frente_prod").upper()
 
-
     # ==========================================
-    # --- 1. EXPANDER DE AGREGAR PERSONAL (FUERA DEL FORMULARIO) ---
-    # ==========================================
-    with st.expander("➕ ¿Falta alguien? Agregar personal no registrado"):
-        col_d, col_n, col_b = st.columns([2, 3, 1])
-        with col_d: 
-            nuevo_dni = st.text_input("DNI Nuevo")
-        with col_n: 
-            nuevo_nombre = st.text_input("Nombre Nuevo").upper()
-        with col_b: 
-            st.markdown("<br>", unsafe_allow_html=True) 
-            # Al estar fuera del form, usamos st.button sin que dé error
-            if st.button("Añadir a la lista", use_container_width=True):
-                if nuevo_dni and nuevo_nombre:
-                    nuevo_registro = f"{nuevo_dni} - {nuevo_nombre}"
-                    if nuevo_registro not in st.session_state["lista_personal"]:
-                        st.session_state["lista_personal"].insert(0, nuevo_registro) 
-                        st.success("✅ Agregado temporalmente")
-                        st.rerun() 
-                else:
-                    st.warning("Escribe DNI y Nombre")
-
-    # ==========================================
-    # --- 2. APERTURA DEL FORMULARIO PRINCIPAL ---
+    # --- APERTURA DEL FORMULARIO PRINCIPAL ---
     # ==========================================
     with st.form("form_produccion", clear_on_submit=True):
         
@@ -315,6 +312,7 @@ with tab2:
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
+        # Este es el ÚNICO botón que envía el formulario
         enviado_prod = st.form_submit_button("Guardar Hoja de Producción", use_container_width=True, type="primary")
 
     # ==========================================
