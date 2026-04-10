@@ -171,6 +171,32 @@ with tab2:
     with col5:
         frente_prod = st.text_input("FRENTE DE TRABAJO *", key="frente_prod").upper()
 
+
+    # ==========================================
+    # --- 1. EXPANDER DE AGREGAR PERSONAL (FUERA DEL FORMULARIO) ---
+    # ==========================================
+    with st.expander("➕ ¿Falta alguien? Agregar personal no registrado"):
+        col_d, col_n, col_b = st.columns([2, 3, 1])
+        with col_d: 
+            nuevo_dni = st.text_input("DNI Nuevo")
+        with col_n: 
+            nuevo_nombre = st.text_input("Nombre Nuevo").upper()
+        with col_b: 
+            st.markdown("<br>", unsafe_allow_html=True) 
+            # Al estar fuera del form, usamos st.button sin que dé error
+            if st.button("Añadir a la lista", use_container_width=True):
+                if nuevo_dni and nuevo_nombre:
+                    nuevo_registro = f"{nuevo_dni} - {nuevo_nombre}"
+                    if nuevo_registro not in st.session_state["lista_personal"]:
+                        st.session_state["lista_personal"].insert(0, nuevo_registro) 
+                        st.success("✅ Agregado temporalmente")
+                        st.rerun() 
+                else:
+                    st.warning("Escribe DNI y Nombre")
+
+    # ==========================================
+    # --- 2. APERTURA DEL FORMULARIO PRINCIPAL ---
+    # ==========================================
     with st.form("form_produccion", clear_on_submit=True):
         
         # --- CONFIGURACIÓN BASE PARA COLUMNAS DE HORAS/CANTIDADES ---
@@ -207,7 +233,7 @@ with tab2:
             num_rows="dynamic", use_container_width=True, column_config=columnas_act
         )
 
-# ==========================================
+        # ==========================================
         # BLOQUE 2: TAREO DE PERSONAL
         # ==========================================
         st.markdown("---")
@@ -221,66 +247,22 @@ with tab2:
             df.index = [1, 2, 3]
             return df
 
-        # --- 1. EXPANDER DE AGREGAR PERSONAL (ESTRICTAMENTE FUERA DEL FORMULARIO) ---
-        with st.expander("➕ ¿Falta alguien? Agregar personal no registrado"):
-            col_d, col_n, col_b = st.columns([2, 3, 1])
-            with col_d: 
-                nuevo_dni = st.text_input("DNI Nuevo")
-            with col_n: 
-                nuevo_nombre = st.text_input("Nombre Nuevo").upper()
-            with col_b: 
-                st.markdown("<br>", unsafe_allow_html=True) 
-                # Al estar fuera del form, usamos st.button sin que dé error
-                if st.button("Añadir a la lista", use_container_width=True):
-                    if nuevo_dni and nuevo_nombre:
-                        nuevo_registro = f"{nuevo_dni} - {nuevo_nombre}"
-                        if nuevo_registro not in st.session_state["lista_personal"]:
-                            st.session_state["lista_personal"].insert(0, nuevo_registro) 
-                            st.success("✅ Agregado temporalmente")
-                            st.rerun() 
-                    else:
-                        st.warning("Escribe DNI y Nombre")
-
-        # --- 2. APERTURA DEL FORMULARIO PRINCIPAL PARA GUARDAR LOS DATOS ---
-        # (Si ya tenías un st.form abierto arriba de este bloque, asegúrate de cerrarlo
-        # y abrir uno nuevo a partir de aquí para englobar tu tabla).
-        with st.form("formulario_hoja_produccion", clear_on_submit=True):
-            
-            columnas_tareo = {
-                "_index": st.column_config.Column("N°", pinned=True, disabled=True),
-                "TAREO PERSONAL": st.column_config.SelectboxColumn(
-                    "TAREO PERSONAL", 
-                    help="Haz doble clic y escribe el DNI o Nombre para buscar",
-                    options=st.session_state["lista_personal"], 
-                    required=True
-                ),
-                "CARGO": st.column_config.Column("CARGO"),
-                **columnas_base_horas # Asegúrate de que esta variable exista más arriba en tu código
-            }
-            
-            # La tabla de Streamlit (st.data_editor)
-            df_tareo = st.data_editor(
-                crear_tabla_tareo(), 
-                num_rows="dynamic", 
-                use_container_width=True, 
-                column_config=columnas_tareo
-            )
-            
-            # ==========================================
-            # AQUÍ DEBES PEGAR TUS DEMÁS BLOQUES SI LOS TIENES
-            # (Ej. Bloque 3: Equipos, Bloque 4: Materiales, etc.)
-            # ==========================================
-            
-            
-            # ==========================================
-            # BOTÓN FINAL DEL FORMULARIO (PARA MANDAR A GOOGLE SHEETS)
-            # ==========================================
-            enviado_produccion = st.form_submit_button("Guardar Hoja de Producción", type="primary", use_container_width=True)
-            
-        # --- FUERA DEL FORMULARIO: LÓGICA DE GUARDADO ---
-        if enviado_produccion:
-            st.success("Lógica de guardado a Google Sheets aquí...")
-            # Aquí va tu código de hoja_reporte.append_row(...)
+        columnas_tareo = {
+            "_index": st.column_config.Column("N°", pinned=True, disabled=True),
+            "TAREO PERSONAL": st.column_config.SelectboxColumn(
+                "TAREO PERSONAL", 
+                help="Haz doble clic y escribe el DNI o Nombre para buscar",
+                options=st.session_state["lista_personal"], 
+                required=True
+            ),
+            "CARGO": st.column_config.Column("CARGO"),
+            **columnas_base_horas 
+        }
+        
+        df_tareo = st.data_editor(
+            crear_tabla_tareo(), 
+            num_rows="dynamic", use_container_width=True, column_config=columnas_tareo
+        )
 
         # ==========================================
         # BLOQUE 3: EQUIPOS
@@ -335,6 +317,9 @@ with tab2:
         st.markdown("<br>", unsafe_allow_html=True)
         enviado_prod = st.form_submit_button("Guardar Hoja de Producción", use_container_width=True, type="primary")
 
+    # ==========================================
+    # --- LÓGICA DE GUARDADO (FUERA DEL FORMULARIO) ---
+    # ==========================================
     if enviado_prod:
         if not jefe_grupo_prod or not tramo_prod or not frente_prod:
             st.error("⚠️ Faltan campos obligatorios en la cabecera (Jefe, Tramo o Frente).")
