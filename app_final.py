@@ -157,7 +157,7 @@ with tab1:
         enviado_reporte = st.form_submit_button("Guardar Ficha Diaria", use_container_width=True, type="primary")
 
     if enviado_reporte:
-        if not operador or not frente_trabajo or not codigo_interno or not codigo_equipo or not fase:
+        if not operador or not frente_trabajo or not codigo_interno or not fase:
             st.error("⚠️ Faltan campos obligatorios.")
         elif final_horometro < inicio_horometro:
             st.error("⚠️ El horómetro final no puede ser menor al inicial.")
