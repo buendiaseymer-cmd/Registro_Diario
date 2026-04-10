@@ -4,12 +4,12 @@ from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 import json
 import pandas as pd
-import openpyxl
+
 # Asegúrate de que tu archivo Excel esté en la misma carpeta que tu código
 @st.cache_data 
 def cargar_bd_personal():
     try:
-        df_bd = pd.read_excel("base_datos_a.xlsx") 
+        df_bd = pd.read_excel("base_datos.xlsx") 
         lista = (df_bd["DNI"].astype(str) + " - " + df_bd["NOMBRE"]).tolist()
         return lista
     except Exception as e:
