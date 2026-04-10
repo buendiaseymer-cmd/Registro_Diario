@@ -8,16 +8,15 @@ import pandas as pd
 @st.cache_data 
 def cargar_bd_personal():
     try:
-        # Cambia 'base_datos.xlsx' por el nombre real de tu archivo
         df_bd = pd.read_excel("base_datos.xlsx") 
-        
-        # Asegúrate de que los encabezados en tu Excel sean exactamente 'DNI' y 'NOMBRE'
-        # Esto creará una lista con el formato "12345678 - JUAN PEREZ"
         lista = (df_bd["DNI"].astype(str) + " - " + df_bd["NOMBRE"]).tolist()
         return lista
     except Exception as e:
-        st.error(f"No se pudo cargar la base de datos de personal. Error: {e}")
         return ["00000000 - SIN BASE DE DATOS"]
+
+# Si la lista no está en la memoria, la cargamos del Excel
+if "lista_personal" not in st.session_state:
+    st.session_state["lista_personal"] = cargar_bd_personal()
 
 lista_personal = cargar_bd_personal()
 # ---- CONFIGURACIÓN DE LA PÁGINA (siempre primero) ----
@@ -237,6 +236,26 @@ with tab2:
             **columnas_base_horas
         }
 
+        # --- OPCIÓN PARA AGREGAR PERSONAL MANUALMENTE ---
+        with st.expander("➕ ¿Falta alguien? Agregar personal no registrado"):
+            col_d, col_n, col_b = st.columns([2, 3, 1])
+            with col_d: 
+                nuevo_dni = st.text_input("DNI Nuevo")
+            with col_n: 
+                nuevo_nombre = st.text_input("Nombre Nuevo").upper()
+            with col_b: 
+                st.markdown("<br>", unsafe_allow_html=True) # Espacio para alinear el botón
+                if st.button("Añadir a la lista", use_container_width=True):
+                    if nuevo_dni and nuevo_nombre:
+                        nuevo_registro = f"{nuevo_dni} - {nuevo_nombre}"
+                        if nuevo_registro not in st.session_state["lista_personal"]:
+                            # Lo agregamos al inicio de la lista para encontrarlo rápido
+                            st.session_state["lista_personal"].insert(0, nuevo_registro) 
+                            st.success("✅ Agregado temporalmente")
+                            st.rerun() # Recargamos para que aparezca en la tabla
+                    else:
+                        st.warning("Escribe DNI y Nombre")
+        
         df_tareo = st.data_editor(
             crear_tabla_tareo(), 
             num_rows="dynamic", use_container_width=True, column_config=columnas_tareo
