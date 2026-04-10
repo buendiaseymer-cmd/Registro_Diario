@@ -4,7 +4,22 @@ from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 import json
 import pandas as pd
+# Asegúrate de que tu archivo Excel esté en la misma carpeta que tu código
+@st.cache_data 
+def cargar_bd_personal():
+    try:
+        # Cambia 'base_datos.xlsx' por el nombre real de tu archivo
+        df_bd = pd.read_excel("base_datos.xlsx") 
+        
+        # Asegúrate de que los encabezados en tu Excel sean exactamente 'DNI' y 'NOMBRE'
+        # Esto creará una lista con el formato "12345678 - JUAN PEREZ"
+        lista = (df_bd["DNI"].astype(str) + " - " + df_bd["NOMBRE"]).tolist()
+        return lista
+    except Exception as e:
+        st.error(f"No se pudo cargar la base de datos de personal. Error: {e}")
+        return ["00000000 - SIN BASE DE DATOS"]
 
+lista_personal = cargar_bd_personal()
 # ---- CONFIGURACIÓN DE LA PÁGINA (siempre primero) ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
 
@@ -209,7 +224,16 @@ with tab2:
 
         columnas_tareo = {
             "_index": st.column_config.Column("N°", pinned=True, disabled=True),
-            "TAREO PERSONAL": st.column_config.Column(pinned=True),
+            
+            # Aquí cambiamos Column por SelectboxColumn
+            "TAREO PERSONAL": st.column_config.SelectboxColumn(
+                "TAREO PERSONAL", 
+                help="Haz doble clic y escribe el DNI o Nombre para buscar",
+                options=lista_personal, # Llamamos a la lista que creamos arriba
+                required=True
+            ),
+            
+            "CARGO": st.column_config.Column("CARGO"),
             **columnas_base_horas
         }
 
