@@ -230,7 +230,7 @@ with tab2:
                 nuevo_nombre = st.text_input("Nombre Nuevo").upper()
             with col_b: 
                 st.markdown("<br>", unsafe_allow_html=True) # Espacio para alinear el botón
-                if st.button("Añadir a la lista", use_container_width=True):
+                if st.form_submit_button("Añadir a la lista", use_container_width=True):
                     if nuevo_dni and nuevo_nombre:
                         nuevo_registro = f"{nuevo_dni} - {nuevo_nombre}"
                         if nuevo_registro not in st.session_state["lista_personal"]:
