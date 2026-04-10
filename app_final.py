@@ -8,7 +8,7 @@ import pandas as pd
 @st.cache_data 
 def cargar_bd_personal():
     try:
-        df_bd = pd.read_excel("base_datos.xlsx") 
+        df_bd = pd.read_excel("base_datos_a.xlsx") 
         lista = (df_bd["DNI"].astype(str) + " - " + df_bd["NOMBRE"]).tolist()
         return lista
     except Exception as e:
