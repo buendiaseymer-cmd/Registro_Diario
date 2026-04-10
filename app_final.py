@@ -5,8 +5,11 @@ import datetime
 import json
 import pandas as pd
 
-# Asegúrate de que tu archivo Excel esté en la misma carpeta que tu código
-@st.cache_data 
+# ==========================================
+# 1. FUNCIÓN DE CARGA (CON TIEMPO DE VIDA)
+# ==========================================
+# El ttl=600 hace que el caché caduque automáticamente cada 10 minutos (600 seg)
+@st.cache_data(ttl=600) 
 def cargar_bd_personal():
     try:
         df_bd = pd.read_excel("base_datos.xlsx") 
@@ -15,7 +18,24 @@ def cargar_bd_personal():
     except Exception as e:
         return ["00000000 - SIN BASE DE DATOS"]
 
-# Si la lista no está en la memoria, la cargamos del Excel
+# ==========================================
+# 2. BOTÓN DE ACTUALIZACIÓN MANUAL (SIDEBAR)
+# ==========================================
+with st.sidebar:
+    st.markdown("### ⚙️ Sistema")
+    if st.button("🔄 Actualizar Base de Datos", use_container_width=True):
+        # Rompemos el candado 1
+        st.cache_data.clear() 
+        # Rompemos el candado 2
+        if "lista_personal" in st.session_state:
+            del st.session_state["lista_personal"] 
+        # Recargamos la app
+        st.rerun()
+
+# ==========================================
+# 3. ASIGNACIÓN A LA MEMORIA DE LA SESIÓN
+# ==========================================
+# Si la lista no está en la memoria (porque es la primera vez o porque presionaste el botón), la cargamos
 if "lista_personal" not in st.session_state:
     st.session_state["lista_personal"] = cargar_bd_personal()
 
