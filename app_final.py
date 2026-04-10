@@ -207,7 +207,7 @@ with tab2:
             num_rows="dynamic", use_container_width=True, column_config=columnas_act
         )
 
-        # ==========================================
+# ==========================================
         # BLOQUE 2: TAREO DE PERSONAL
         # ==========================================
         st.markdown("---")
@@ -220,21 +220,6 @@ with tab2:
                 df.loc[len(df)] = ["", "", None, None, None, None, None]
             df.index = [1, 2, 3]
             return df
-
-        columnas_tareo = {
-            "_index": st.column_config.Column("N°", pinned=True, disabled=True),
-            
-            # Aquí cambiamos Column por SelectboxColumn
-            "TAREO PERSONAL": st.column_config.SelectboxColumn(
-                "TAREO PERSONAL", 
-                help="Haz doble clic y escribe el DNI o Nombre para buscar",
-                options=lista_personal, # Llamamos a la lista que creamos arriba
-                required=True
-            ),
-            
-            "CARGO": st.column_config.Column("CARGO"),
-            **columnas_base_horas
-        }
 
         # --- OPCIÓN PARA AGREGAR PERSONAL MANUALMENTE ---
         with st.expander("➕ ¿Falta alguien? Agregar personal no registrado"):
@@ -255,6 +240,21 @@ with tab2:
                             st.rerun() # Recargamos para que aparezca en la tabla
                     else:
                         st.warning("Escribe DNI y Nombre")
+
+        columnas_tareo = {
+            "_index": st.column_config.Column("N°", pinned=True, disabled=True),
+            
+            # Usamos st.session_state["lista_personal"] para que tome los agregados manualmente
+            "TAREO PERSONAL": st.column_config.SelectboxColumn(
+                "TAREO PERSONAL", 
+                help="Haz doble clic y escribe el DNI o Nombre para buscar",
+                options=st.session_state["lista_personal"], 
+                required=True
+            ),
+            
+            "CARGO": st.column_config.Column("CARGO"),
+            **columnas_base_horas
+        }
         
         df_tareo = st.data_editor(
             crear_tabla_tareo(), 
