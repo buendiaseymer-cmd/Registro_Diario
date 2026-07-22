@@ -94,7 +94,6 @@ if not verificar_autenticacion():
 # Solo se ejecuta si el login fue exitoso
 
 
-# ========== TU CÓDIGO ORIGINAL (sin cambios) ==========
 @st.cache_resource
 def conectar_google_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -339,6 +338,10 @@ with tab2:
             num_rows="dynamic", use_container_width=True, column_config=columnas_materiales
         )
 
+        st.markdown("---")
+        st.markdown("#### Observaciones")
+        observaciones = st.text_area("OBSERVACIONES", key="obs_prod").upper()
+
         st.markdown("<br>", unsafe_allow_html=True)
         enviado_prod = st.form_submit_button("Guardar Hoja de Producción", use_container_width=True, type="primary")
 
@@ -494,7 +497,9 @@ with tab2:
                 bloque_final.append(["", "", "", "", "", "", "", "", ""])
                 filas_datos_b3_1 = 1
                 
-            bloque_final.append(["", "", "", "", "", "", "", "", ""]) # Espacio final
+            # --- OBSERVACIONES ---
+            bloque_final.append(["", "", "", "", "", "", "", "", ""])  # línea en blanco
+            bloque_final.append(["OBSERVACIONES:", observaciones, "", "", "", "", "", "", ""])
 
             # --- ENVÍO Y FORMATO A EXCEL ---
             try:
