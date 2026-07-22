@@ -10,17 +10,13 @@ import pandas as pd
 # ==========================================
 # El ttl=600 hace que el caché caduque automáticamente cada 10 minutos (600 seg)
 @st.cache_data(ttl=600)
-def cargar_bd_personal_desde_gsheet(cliente):
+def cargar_bd_personal_desde_gsheet():
     try:
-        # Abre el archivo de Google Sheets (debe existir y estar compartido)
+        cliente = conectar_google_sheets()   # usa la conexión ya cacheada
         hoja_personal = cliente.open("Base_Personal").sheet1
-        # Obtiene todos los registros como lista de diccionarios
         datos = hoja_personal.get_all_records()
         if not datos:
             return ["00000000 - SIN DATOS"]
-        # Asume que la primera columna es DNI y la segunda NOMBRE
-        # get_all_records() devuelve claves según la primera fila (encabezados)
-        # Por ejemplo: [{'DNI': '12345678', 'NOMBRE': 'JUAN PEREZ'}, ...]
         lista = [f"{str(row['DNI'])} - {row['NOMBRE']}" for row in datos if row['DNI']]
         return lista
     except Exception as e:
@@ -114,7 +110,7 @@ try:
     hoja_costos = cliente.open("Costos Diarios").worksheet("Costos_Diarios")
     
     if "lista_personal" not in st.session_state:
-        st.session_state["lista_personal"] = cargar_bd_personal_desde_gsheet(cliente)
+        st.session_state["lista_personal"] = cargar_bd_personal_desde_gsheet()
         
 except Exception as e:
     st.error("❌ Error conectando a Google Sheets. Verifica los nombres de los archivos.")
