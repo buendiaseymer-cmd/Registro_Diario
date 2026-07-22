@@ -9,14 +9,22 @@ import pandas as pd
 # 1. FUNCIÓN DE CARGA (CON TIEMPO DE VIDA)
 # ==========================================
 # El ttl=600 hace que el caché caduque automáticamente cada 10 minutos (600 seg)
-@st.cache_data(ttl=600) 
-def cargar_bd_personal():
+@st.cache_data(ttl=600)
+def cargar_bd_personal_desde_gsheet(cliente):
     try:
-        df_bd = pd.read_excel("base_datos.xlsx") 
-        lista = (df_bd["DNI"].astype(str) + " - " + df_bd["NOMBRE"]).tolist()
+        # Abre el archivo de Google Sheets (debe existir y estar compartido)
+        hoja_personal = cliente.open("Base_Personal").sheet1
+        # Obtiene todos los registros como lista de diccionarios
+        datos = hoja_personal.get_all_records()
+        if not datos:
+            return ["00000000 - SIN DATOS"]
+        # Asume que la primera columna es DNI y la segunda NOMBRE
+        # get_all_records() devuelve claves según la primera fila (encabezados)
+        # Por ejemplo: [{'DNI': '12345678', 'NOMBRE': 'JUAN PEREZ'}, ...]
+        lista = [f"{str(row['DNI'])} - {row['NOMBRE']}" for row in datos if row['DNI']]
         return lista
     except Exception as e:
-        return ["00000000 - SIN BASE DE DATOS"]
+        return ["00000000 - ERROR AL LEER BD"]
 
 # ==========================================
 # 2. BOTÓN DE ACTUALIZACIÓN MANUAL (SIDEBAR)
@@ -35,13 +43,7 @@ with st.sidebar:
 # ==========================================
 # 3. ASIGNACIÓN A LA MEMORIA DE LA SESIÓN
 # ==========================================
-# Si la lista no está en la memoria (porque es la primera vez o porque presionaste el botón), la cargamos
-if "lista_personal" not in st.session_state:
-    st.session_state["lista_personal"] = cargar_bd_personal()
 
-
-
-lista_personal = cargar_bd_personal()
 # ---- CONFIGURACIÓN DE LA PÁGINA (siempre primero) ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
 
@@ -110,6 +112,10 @@ try:
     cliente = conectar_google_sheets()
     hoja_reporte = cliente.open("Registro_Diario_Equipos").sheet1
     hoja_costos = cliente.open("Costos Diarios").worksheet("Costos_Diarios")
+    
+    if "lista_personal" not in st.session_state:
+        st.session_state["lista_personal"] = cargar_bd_personal_desde_gsheet(cliente)
+        
 except Exception as e:
     st.error("❌ Error conectando a Google Sheets. Verifica los nombres de los archivos.")
     st.stop()
