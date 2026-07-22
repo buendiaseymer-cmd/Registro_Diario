@@ -369,35 +369,35 @@ with tab2:
             bloque_final = []
             
             # --- CONSTRUCCIÓN DEL EXCEL ---
-            bloque_final.append(["", "FECHA:", fecha_str, "", "", "", "", "", ""])
-            bloque_final.append(["", "TURNO:", turno_prod, "", "", "", "", "", ""])
-            bloque_final.append(["", "JEFE DE GRUPO:", jefe_grupo_prod, "", "", "", "", "", ""])
-            bloque_final.append(["", "TRAMO:", tramo_prod, "", "", "", "", "", ""])
-            bloque_final.append(["", "FRENTE:", frente_prod, "", "", "", "", "", ""])
-            bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
+            bloque_final.append(["FECHA:", fecha_str, "", "", "", "", "", "", "", "", ""])
+            bloque_final.append(["TURNO:", turno_prod, "", "", "", "", "", "", "", "", ""])
+            bloque_final.append(["JEFE DE GRUPO:", jefe_grupo_prod, "", "", "", "", "", "", "", "", ""])
+            bloque_final.append(["TRAMO:", tramo_prod, "", "", "", "", "", "", "", "", ""])
+            bloque_final.append(["FRENTE:", frente_prod, "", "", "", "", "", "", "", "", ""])
+            bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])
             
             # --- DATOS BLOQUE 1 ---
-            bloque_final.append(["ACT.", "NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA", "", "LADO", "FASE", ""])
-            bloque_final.append(["", "", "", "", "DEL", "AL", "", "", ""])
+            bloque_final.append(["", "", "ACT.", "NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA", "", "LADO", "FASE", ""])
+            bloque_final.append(["", "", "", "", "", "", "DEL", "AL", "", "", ""])
             
             if not df_actividades.empty:
                 df_actividades.reset_index(drop=True, inplace=True)
                 for i, row in df_actividades.iterrows():
                     num_act = str(i + 1)
-                    fila_limpia = [num_act] + [float(x) if isinstance(x, (int, float)) else str(x) for x in row]
+                    fila_limpia = ["", "", num_act] + [float(x) if isinstance(x, (int, float)) else str(x) for x in row]
                     fila_limpia.append("") 
                     bloque_final.append(fila_limpia)
             else:
-                bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
+                bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])
             
-            bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
+            bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])
             len_b1 = len(bloque_final) 
 
             def mostrar_num(n): return n if n > 0 else ""
 
             # --- DATOS BLOQUE 2 ---
-            bloque_final.append(["N°", "TAREO PERSONAL", "CARGO", "HORAS TRABAJADAS POR ACTIVIDAD", "", "", "", "", "TOTAL HORAS"])
-            bloque_final.append(["", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
+            bloque_final.append(["", "", "N°", "TAREO PERSONAL", "CARGO", "HORAS TRABAJADAS POR ACTIVIDAD", "", "", "", "", "TOTAL HORAS"])
+            bloque_final.append(["", "", "", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
             
             suma_total_horas_personal = 0.0
             filas_datos_b2 = 0
@@ -419,22 +419,22 @@ with tab2:
                     filas_datos_b2 += 1
                     
                     bloque_final.append([
-                        num_fila, str(row["TAREO PERSONAL"]), str(row["CARGO"]), 
+                        "", "", num_fila, str(row["TAREO PERSONAL"]), str(row["CARGO"]), 
                         mostrar_num(horas_limpias[0]), mostrar_num(horas_limpias[1]), 
                         mostrar_num(horas_limpias[2]), mostrar_num(horas_limpias[3]), 
                         mostrar_num(horas_limpias[4]), mostrar_num(total_fila)
                     ])
             else:
-                bloque_final.append(["", "", "", "", "", "", "", "", ""])
+                bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])
                 filas_datos_b2 = 1
                 
-            bloque_final.append(["", "TOTAL", "", "", "", "", "", "", mostrar_num(suma_total_horas_personal)])
-            bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
+            bloque_final.append(["", "", "", "TOTAL", "", "", "", "", "", "", mostrar_num(suma_total_horas_personal)])
+            bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])
             len_b2 = len(bloque_final)
 
             # --- DATOS BLOQUE 3 ---
-            bloque_final.append(["N°", "DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "HORAS TRABAJADAS POR ACTIVIDAD", "", "", "", "", "TOTAL HORAS"])
-            bloque_final.append(["", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
+            bloque_final.append(["", "", "N°", "DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "HORAS TRABAJADAS POR ACTIVIDAD", "", "", "", "", "TOTAL HORAS"])
+            bloque_final.append(["", "", "", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
             
             filas_datos_b3 = 0
 
@@ -454,21 +454,21 @@ with tab2:
                     filas_datos_b3 += 1
                     
                     bloque_final.append([
-                        num_fila, str(row["DESCRIPCION DE EQUIPOS"]), str(row["CODIGO/PLACA"]), 
+                        "", "", num_fila, str(row["DESCRIPCION DE EQUIPOS"]), str(row["CODIGO/PLACA"]), 
                         mostrar_num(horas_limpias[0]), mostrar_num(horas_limpias[1]), 
                         mostrar_num(horas_limpias[2]), mostrar_num(horas_limpias[3]), 
                         mostrar_num(horas_limpias[4]), mostrar_num(total_fila)
                     ])
             else:
-                bloque_final.append(["", "", "", "", "", "", "", "", ""])
+                bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])
                 filas_datos_b3 = 1
                 
-            bloque_final.append(["", "", "", "", "", "", "", "", ""]) 
+            bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])
             len_b3 = len(bloque_final)
 
             # --- DATOS BLOQUE 3.1 ---
-            bloque_final.append(["N°", "DESCRIPCION DE LOS MATERIALES", "UNIDAD", "CANTIDAD DE MATERIALES USADOS", "", "", "", "", "TOTAL DE MATERIAL"])
-            bloque_final.append(["", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
+            bloque_final.append(["", "", "N°", "DESCRIPCION DE LOS MATERIALES", "UNIDAD", "CANTIDAD DE MATERIALES USADOS", "", "", "", "", "TOTAL DE MATERIAL"])
+            bloque_final.append(["", "", "", "", "", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5", ""])
             
             filas_datos_b3_1 = 0
 
@@ -488,18 +488,18 @@ with tab2:
                     filas_datos_b3_1 += 1
                     
                     bloque_final.append([
-                        num_fila, str(row["DESCRIPCION DE LOS MATERIALES"]), str(row["UNIDAD"]), 
+                        "", "", num_fila, str(row["DESCRIPCION DE LOS MATERIALES"]), str(row["UNIDAD"]), 
                         mostrar_num(cantidades_limpias[0]), mostrar_num(cantidades_limpias[1]), 
                         mostrar_num(cantidades_limpias[2]), mostrar_num(cantidades_limpias[3]), 
                         mostrar_num(cantidades_limpias[4]), mostrar_num(total_fila)
                     ])
             else:
-                bloque_final.append(["", "", "", "", "", "", "", "", ""])
+                bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])
                 filas_datos_b3_1 = 1
                 
             # --- OBSERVACIONES ---
-            bloque_final.append(["", "", "", "", "", "", "", "", ""])  # línea en blanco
-            bloque_final.append(["OBSERVACIONES:", observaciones, "", "", "", "", "", "", ""])
+            bloque_final.append(["", "", "", "", "", "", "", "", "", "", ""])  # línea en blanco
+            bloque_final.append(["", "", "OBSERVACIONES:", observaciones, "", "", "", "", "", "", "", ""])
 
             # --- ENVÍO Y FORMATO A EXCEL ---
             try:
@@ -510,56 +510,56 @@ with tab2:
                 fila_inicio = int(''.join(filter(str.isdigit, celda_inicio))) 
                 
                 # --- FORMATO CABECERA ---
-                hoja_costos.format(f"B{fila_inicio}:B{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
-                hoja_costos.format(f"C{fila_inicio}:C{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "LEFT"})
+                hoja_costos.format(f"A{fila_inicio}:A{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
+                hoja_costos.format(f"B{fila_inicio}:B{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "LEFT"})
 
                 # --- FORMATO BLOQUE 1 ---
                 f_tit_b1_1 = fila_inicio + 6
                 f_tit_b1_2 = fila_inicio + 7
                 f_fin_b1 = f_tit_b1_2 + (len(df_actividades) if not df_actividades.empty else 1)
                 
-                hoja_costos.merge_cells(f"E{f_tit_b1_1}:F{f_tit_b1_1}")
-                for col in ["A", "B", "C", "D", "G", "H"]:
+                hoja_costos.merge_cells(f"G{f_tit_b1_1}:H{f_tit_b1_1}")
+                for col in ["C", "D", "E", "F", "I", "J"]:
                     hoja_costos.merge_cells(f"{col}{f_tit_b1_1}:{col}{f_tit_b1_2}")
                 
-                hoja_costos.format(f"A{f_tit_b1_1}:H{f_tit_b1_2}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"A{f_tit_b1_2+1}:H{f_fin_b1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                hoja_costos.format(f"C{f_tit_b1_1}:J{f_tit_b1_2}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                hoja_costos.format(f"C{f_tit_b1_2+1}:J{f_fin_b1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
                 # --- FORMATO BLOQUE 2 ---
                 f_ini_b2 = fila_inicio + len_b1
                 f_fin_b2 = f_ini_b2 + 1 + filas_datos_b2
                 
-                hoja_costos.merge_cells(f"D{f_ini_b2}:H{f_ini_b2}") 
-                for col in ["A", "B", "C", "I"]:
+                hoja_costos.merge_cells(f"F{f_ini_b2}:J{f_ini_b2}") 
+                for col in ["C", "D", "E", "K"]:
                     hoja_costos.merge_cells(f"{col}{f_ini_b2}:{col}{f_ini_b2+1}")
                 
-                hoja_costos.format(f"A{f_ini_b2}:I{f_ini_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"A{f_ini_b2+2}:I{f_fin_b2}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                hoja_costos.format(f"C{f_ini_b2}:K{f_ini_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                hoja_costos.format(f"C{f_ini_b2+2}:K{f_fin_b2}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
                 
-                hoja_costos.merge_cells(f"A{f_fin_b2+1}:H{f_fin_b2+1}")
-                hoja_costos.format(f"A{f_fin_b2+1}:I{f_fin_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER"})
+                hoja_costos.merge_cells(f"C{f_fin_b2+1}:J{f_fin_b2+1}")
+                hoja_costos.format(f"C{f_fin_b2+1}:K{f_fin_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER"})
 
                 # --- FORMATO BLOQUE 3 ---
                 f_ini_b3 = fila_inicio + len_b2
                 f_fin_b3 = f_ini_b3 + 1 + filas_datos_b3
                 
-                hoja_costos.merge_cells(f"D{f_ini_b3}:H{f_ini_b3}") 
-                for col in ["A", "B", "C", "I"]:
+                hoja_costos.merge_cells(f"F{f_ini_b3}:J{f_ini_b3}") 
+                for col in ["C", "D", "E", "K"]:
                     hoja_costos.merge_cells(f"{col}{f_ini_b3}:{col}{f_ini_b3+1}")
                 
-                hoja_costos.format(f"A{f_ini_b3}:I{f_ini_b3+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"A{f_ini_b3+2}:I{f_fin_b3}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                hoja_costos.format(f"C{f_ini_b3}:K{f_ini_b3+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                hoja_costos.format(f"C{f_ini_b3+2}:K{f_fin_b3}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
                 # --- FORMATO BLOQUE 3.1 ---
                 f_ini_b3_1 = fila_inicio + len_b3
                 f_fin_b3_1 = f_ini_b3_1 + 1 + filas_datos_b3_1
                 
-                hoja_costos.merge_cells(f"D{f_ini_b3_1}:H{f_ini_b3_1}") 
-                for col in ["A", "B", "C", "I"]:
+                hoja_costos.merge_cells(f"F{f_ini_b3_1}:J{f_ini_b3_1}") 
+                for col in ["C", "D", "E", "K"]:
                     hoja_costos.merge_cells(f"{col}{f_ini_b3_1}:{col}{f_ini_b3_1+1}")
                 
-                hoja_costos.format(f"A{f_ini_b3_1}:I{f_ini_b3_1+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"A{f_ini_b3_1+2}:I{f_fin_b3_1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                hoja_costos.format(f"C{f_ini_b3_1}:K{f_ini_b3_1+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                hoja_costos.format(f"C{f_ini_b3_1+2}:K{f_fin_b3_1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
                 st.success("✅ ¡Todos los bloques de Producción se guardaron y formatearon correctamente en Excel!")
             except Exception as e:
