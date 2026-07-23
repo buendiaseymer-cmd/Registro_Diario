@@ -9,14 +9,18 @@ import pandas as pd
 # 1. FUNCIÓN DE CARGA (CON TIEMPO DE VIDA)
 # ==========================================
 # El ttl=600 hace que el caché caduque automáticamente cada 10 minutos (600 seg)
-@st.cache_data(ttl=600) 
-def cargar_bd_personal():
+@st.cache_data(ttl=600)
+def cargar_bd_personal_desde_gsheet():
     try:
-        df_bd = pd.read_excel("base_datos.xlsx") 
-        lista = (df_bd["DNI"].astype(str) + " - " + df_bd["NOMBRE"]).tolist()
+        cliente = conectar_google_sheets()   # usa la conexión ya cacheada
+        hoja_personal = cliente.open("Base_Personal").sheet1
+        datos = hoja_personal.get_all_records()
+        if not datos:
+            return ["00000000 - SIN DATOS"]
+        lista = [f"{str(row['DNI'])} - {row['NOMBRE']}" for row in datos if row['DNI']]
         return lista
     except Exception as e:
-        return ["00000000 - SIN BASE DE DATOS"]
+        return ["00000000 - ERROR AL LEER BD"]
 
 # ==========================================
 # 2. BOTÓN DE ACTUALIZACIÓN MANUAL (SIDEBAR)
@@ -35,13 +39,7 @@ with st.sidebar:
 # ==========================================
 # 3. ASIGNACIÓN A LA MEMORIA DE LA SESIÓN
 # ==========================================
-# Si la lista no está en la memoria (porque es la primera vez o porque presionaste el botón), la cargamos
-if "lista_personal" not in st.session_state:
-    st.session_state["lista_personal"] = cargar_bd_personal()
 
-
-
-lista_personal = cargar_bd_personal()
 # ---- CONFIGURACIÓN DE LA PÁGINA (siempre primero) ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
 
@@ -110,6 +108,10 @@ try:
     cliente = conectar_google_sheets()
     hoja_reporte = cliente.open("Registro_Diario_Equipos").sheet1
     hoja_costos = cliente.open("Costos Diarios").worksheet("Costos_Diarios")
+    
+    if "lista_personal" not in st.session_state:
+        st.session_state["lista_personal"] = cargar_bd_personal_desde_gsheet()
+        
 except Exception as e:
     st.error("❌ Error conectando a Google Sheets. Verifica los nombres de los archivos.")
     st.stop()
@@ -513,53 +515,43 @@ with tab2:
                 hoja_costos.format(f"A{fila_inicio}:A{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
                 hoja_costos.format(f"B{fila_inicio}:B{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "LEFT"})
 
-                # --- FORMATO BLOQUE 1 ---
+                # --- FORMATO BLOQUE 1 (SIN MERGES) ---
                 f_tit_b1_1 = fila_inicio + 6
                 f_tit_b1_2 = fila_inicio + 7
                 f_fin_b1 = f_tit_b1_2 + (len(df_actividades) if not df_actividades.empty else 1)
                 
-                hoja_costos.merge_cells(f"G{f_tit_b1_1}:H{f_tit_b1_1}")
-                for col in ["C", "D", "E", "F", "I", "J"]:
-                    hoja_costos.merge_cells(f"{col}{f_tit_b1_1}:{col}{f_tit_b1_2}")
-                
+                # Formato de títulos centrado y negrita (sin combinar celdas)
                 hoja_costos.format(f"C{f_tit_b1_1}:J{f_tit_b1_2}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"C{f_tit_b1_2+1}:J{f_fin_b1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                # Color verde para las filas de datos (si hay)
+                if f_fin_b1 >= f_tit_b1_2+1:
+                    hoja_costos.format(f"C{f_tit_b1_2+1}:J{f_fin_b1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
                 # --- FORMATO BLOQUE 2 ---
                 f_ini_b2 = fila_inicio + len_b1
                 f_fin_b2 = f_ini_b2 + 1 + filas_datos_b2
                 
-                hoja_costos.merge_cells(f"F{f_ini_b2}:J{f_ini_b2}") 
-                for col in ["C", "D", "E", "K"]:
-                    hoja_costos.merge_cells(f"{col}{f_ini_b2}:{col}{f_ini_b2+1}")
-                
                 hoja_costos.format(f"C{f_ini_b2}:K{f_ini_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"C{f_ini_b2+2}:K{f_fin_b2}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                if f_fin_b2 >= f_ini_b2+2:
+                    hoja_costos.format(f"C{f_ini_b2+2}:K{f_fin_b2}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
                 
-                hoja_costos.merge_cells(f"C{f_fin_b2+1}:J{f_fin_b2+1}")
+                # Fila de TOTAL (negrita centrada, sin merge)
                 hoja_costos.format(f"C{f_fin_b2+1}:K{f_fin_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER"})
 
                 # --- FORMATO BLOQUE 3 ---
                 f_ini_b3 = fila_inicio + len_b2
                 f_fin_b3 = f_ini_b3 + 1 + filas_datos_b3
                 
-                hoja_costos.merge_cells(f"F{f_ini_b3}:J{f_ini_b3}") 
-                for col in ["C", "D", "E", "K"]:
-                    hoja_costos.merge_cells(f"{col}{f_ini_b3}:{col}{f_ini_b3+1}")
-                
                 hoja_costos.format(f"C{f_ini_b3}:K{f_ini_b3+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"C{f_ini_b3+2}:K{f_fin_b3}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                if f_fin_b3 >= f_ini_b3+2:
+                    hoja_costos.format(f"C{f_ini_b3+2}:K{f_fin_b3}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
                 # --- FORMATO BLOQUE 3.1 ---
                 f_ini_b3_1 = fila_inicio + len_b3
                 f_fin_b3_1 = f_ini_b3_1 + 1 + filas_datos_b3_1
                 
-                hoja_costos.merge_cells(f"F{f_ini_b3_1}:J{f_ini_b3_1}") 
-                for col in ["C", "D", "E", "K"]:
-                    hoja_costos.merge_cells(f"{col}{f_ini_b3_1}:{col}{f_ini_b3_1+1}")
-                
                 hoja_costos.format(f"C{f_ini_b3_1}:K{f_ini_b3_1+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"C{f_ini_b3_1+2}:K{f_fin_b3_1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                if f_fin_b3_1 >= f_ini_b3_1+2:
+                    hoja_costos.format(f"C{f_ini_b3_1+2}:K{f_fin_b3_1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
                 st.success("✅ ¡Todos los bloques de Producción se guardaron y formatearon correctamente en Excel!")
             except Exception as e:
