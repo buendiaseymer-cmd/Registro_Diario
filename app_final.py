@@ -9,18 +9,14 @@ import pandas as pd
 # 1. FUNCIÓN DE CARGA (CON TIEMPO DE VIDA)
 # ==========================================
 # El ttl=600 hace que el caché caduque automáticamente cada 10 minutos (600 seg)
-@st.cache_data(ttl=600)
-def cargar_bd_personal_desde_gsheet():
+@st.cache_data(ttl=600) 
+def cargar_bd_personal():
     try:
-        cliente = conectar_google_sheets()   # usa la conexión ya cacheada
-        hoja_personal = cliente.open("Base_Personal").sheet1
-        datos = hoja_personal.get_all_records()
-        if not datos:
-            return ["00000000 - SIN DATOS"]
-        lista = [f"{str(row['DNI'])} - {row['NOMBRE']}" for row in datos if row['DNI']]
+        df_bd = pd.read_excel("base_datos.xlsx") 
+        lista = (df_bd["DNI"].astype(str) + " - " + df_bd["NOMBRE"]).tolist()
         return lista
     except Exception as e:
-        return ["00000000 - ERROR AL LEER BD"]
+        return ["00000000 - SIN BASE DE DATOS"]
 
 # ==========================================
 # 2. BOTÓN DE ACTUALIZACIÓN MANUAL (SIDEBAR)
@@ -39,7 +35,13 @@ with st.sidebar:
 # ==========================================
 # 3. ASIGNACIÓN A LA MEMORIA DE LA SESIÓN
 # ==========================================
+# Si la lista no está en la memoria (porque es la primera vez o porque presionaste el botón), la cargamos
+if "lista_personal" not in st.session_state:
+    st.session_state["lista_personal"] = cargar_bd_personal()
 
+
+
+lista_personal = cargar_bd_personal()
 # ---- CONFIGURACIÓN DE LA PÁGINA (siempre primero) ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
 
@@ -108,10 +110,6 @@ try:
     cliente = conectar_google_sheets()
     hoja_reporte = cliente.open("Registro_Diario_Equipos").sheet1
     hoja_costos = cliente.open("Costos Diarios").worksheet("Costos_Diarios")
-    
-    if "lista_personal" not in st.session_state:
-        st.session_state["lista_personal"] = cargar_bd_personal_desde_gsheet()
-        
 except Exception as e:
     st.error("❌ Error conectando a Google Sheets. Verifica los nombres de los archivos.")
     st.stop()
@@ -505,22 +503,13 @@ with tab2:
 
             # --- ENVÍO Y FORMATO A EXCEL ---
             try:
-                # 1. Obtener la última fila con datos real (ignorando merges visuales)
-                todos_los_valores = hoja_costos.get_all_values()
-                ultima_fila = len(todos_los_valores)
-                # Retroceder si las últimas filas están completamente vacías
-                while ultima_fila > 0 and not any(todos_los_valores[ultima_fila - 1]):
-                    ultima_fila -= 1
-                fila_inicio = ultima_fila + 1
-
-                # 2. Escribir todo el bloque de una sola vez en la posición exacta
-                hoja_costos.update(
-                    f'A{fila_inicio}',
-                    bloque_final,
-                    value_input_option='USER_ENTERED'
-                )
-
-                # --- FORMATO CABECERA (sin cambios) ---
+                respuesta = hoja_costos.append_rows(bloque_final, value_input_option='USER_ENTERED')
+                
+                rango_actualizado = respuesta.get('updates', {}).get('updatedRange', '')
+                celda_inicio = rango_actualizado.split('!')[1].split(':')[0] 
+                fila_inicio = int(''.join(filter(str.isdigit, celda_inicio))) 
+                
+                # --- FORMATO CABECERA ---
                 hoja_costos.format(f"A{fila_inicio}:A{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
                 hoja_costos.format(f"B{fila_inicio}:B{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "LEFT"})
 
