@@ -505,13 +505,20 @@ with tab2:
 
             # --- ENVÍO Y FORMATO A EXCEL ---
             try:
-                respuesta = hoja_costos.append_rows(bloque_final, value_input_option='USER_ENTERED')
-                
-                rango_actualizado = respuesta.get('updates', {}).get('updatedRange', '')
-                celda_inicio = rango_actualizado.split('!')[1].split(':')[0] 
-                fila_inicio = int(''.join(filter(str.isdigit, celda_inicio))) 
-                
-                # --- FORMATO CABECERA ---
+                # 1. Obtener la última fila con datos real (ignorando merges visuales)
+                todos_los_valores = hoja_costos.get_all_values()
+                ultima_fila = len(todos_los_valores)
+                # Retroceder si las últimas filas están completamente vacías
+                while ultima_fila > 0 and not any(todos_los_valores[ultima_fila - 1]):
+                    ultima_fila -= 1
+                fila_inicio = ultima_fila + 1
+
+                # 2. Escribir el bloque_final celda por celda
+                for i, fila in enumerate(bloque_final):
+                    for j, valor in enumerate(fila):
+                        hoja_costos.update_cell(fila_inicio + i, j + 1, valor)
+
+                # --- FORMATO CABECERA (sin cambios) ---
                 hoja_costos.format(f"A{fila_inicio}:A{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
                 hoja_costos.format(f"B{fila_inicio}:B{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "LEFT"})
 
