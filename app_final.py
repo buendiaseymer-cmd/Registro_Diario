@@ -513,10 +513,12 @@ with tab2:
                     ultima_fila -= 1
                 fila_inicio = ultima_fila + 1
 
-                # 2. Escribir el bloque_final celda por celda
-                for i, fila in enumerate(bloque_final):
-                    for j, valor in enumerate(fila):
-                        hoja_costos.update_cell(fila_inicio + i, j + 1, valor)
+                # 2. Escribir todo el bloque de una sola vez en la posición exacta
+                hoja_costos.update(
+                    f'A{fila_inicio}',
+                    bloque_final,
+                    value_input_option='USER_ENTERED'
+                )
 
                 # --- FORMATO CABECERA (sin cambios) ---
                 hoja_costos.format(f"A{fila_inicio}:A{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
