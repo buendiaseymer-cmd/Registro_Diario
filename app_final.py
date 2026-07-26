@@ -498,8 +498,8 @@ with tab2:
                 
             # --- OBSERVACIONES ---
             if observaciones.strip():
-                bloque_final.append(["", "OBSERVACIONES:", "", "", "", "", "", "", ""])
-                bloque_final.append(["", observaciones, "", "", "", "", "", "", ""])
+                bloque_final.append(["OBSERVACIONES:", "", "", "", "", "", "", "", ""])
+                bloque_final.append([observaciones, "", "", "", "", "", "", "", ""])
             bloque_final.append(["", "", "", "", "", "", "", "", ""]) # Espacio final
 
             # --- ENVÍO Y FORMATO A EXCEL ---
@@ -564,14 +564,12 @@ with tab2:
 
                 # --- FORMATO OBSERVACIONES ---
                 if observaciones.strip():
-                    fila_obs_label = f_fin_b3_1 + 1   # fila donde dice "OBSERVACIONES:"
-                    fila_obs_text  = f_fin_b3_1 + 2   # fila con el texto
-                    # Etiqueta en negrita, fusionada de B a H
-                    hoja_costos.merge_cells(f"B{fila_obs_label}:H{fila_obs_label}")
-                    hoja_costos.format(f"B{fila_obs_label}", {"textFormat": {"bold": True}})
-                    # Texto fusionado de B a H, con ajuste de línea
-                    hoja_costos.merge_cells(f"B{fila_obs_text}:H{fila_obs_text}")
-                    hoja_costos.format(f"B{fila_obs_text}:H{fila_obs_text}", {"wrapStrategy": "WRAP"})
+                    fila_obs_label = f_fin_b3_1 + 1
+                    fila_obs_text  = f_fin_b3_1 + 2
+                    hoja_costos.merge_cells(f"A{fila_obs_label}:H{fila_obs_label}")
+                    hoja_costos.format(f"A{fila_obs_label}", {"textFormat": {"bold": True}})
+                    hoja_costos.merge_cells(f"A{fila_obs_text}:H{fila_obs_text}")
+                    hoja_costos.format(f"A{fila_obs_text}:H{fila_obs_text}", {"wrapStrategy": "WRAP"})
 
                 st.success("✅ ¡Todos los bloques de Producción se guardaron y formatearon correctamente en Excel!")
             except Exception as e:
