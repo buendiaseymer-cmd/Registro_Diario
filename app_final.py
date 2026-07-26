@@ -338,6 +338,9 @@ with tab2:
             num_rows="dynamic", use_container_width=True, column_config=columnas_materiales
         )
 
+        st.markdown("---")
+        observaciones = st.text_area("OBSERVACIONES / COMENTARIOS ADICIONALES", key="obs_produccion").upper()
+
         st.markdown("<br>", unsafe_allow_html=True)
         enviado_prod = st.form_submit_button("Guardar Hoja de Producción", use_container_width=True, type="primary")
 
@@ -493,6 +496,10 @@ with tab2:
                 bloque_final.append(["", "", "", "", "", "", "", "", ""])
                 filas_datos_b3_1 = 1
                 
+            # --- OBSERVACIONES ---
+            if observaciones.strip():
+                bloque_final.append(["", "OBSERVACIONES:", "", "", "", "", "", "", ""])
+                bloque_final.append(["", observaciones, "", "", "", "", "", "", ""])
             bloque_final.append(["", "", "", "", "", "", "", "", ""]) # Espacio final
 
             # --- ENVÍO Y FORMATO A EXCEL ---
@@ -554,6 +561,17 @@ with tab2:
                 
                 hoja_costos.format(f"A{f_ini_b3_1}:I{f_ini_b3_1+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
                 hoja_costos.format(f"A{f_ini_b3_1+2}:I{f_fin_b3_1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+
+                # --- FORMATO OBSERVACIONES ---
+                if observaciones.strip():
+                    fila_obs_label = f_fin_b3_1 + 1   # fila donde dice "OBSERVACIONES:"
+                    fila_obs_text  = f_fin_b3_1 + 2   # fila con el texto
+                    # Etiqueta en negrita, fusionada de B a H
+                    hoja_costos.merge_cells(f"B{fila_obs_label}:H{fila_obs_label}")
+                    hoja_costos.format(f"B{fila_obs_label}", {"textFormat": {"bold": True}})
+                    # Texto fusionado de B a H, con ajuste de línea
+                    hoja_costos.merge_cells(f"B{fila_obs_text}:H{fila_obs_text}")
+                    hoja_costos.format(f"B{fila_obs_text}:H{fila_obs_text}", {"wrapStrategy": "WRAP"})
 
                 st.success("✅ ¡Todos los bloques de Producción se guardaron y formatearon correctamente en Excel!")
             except Exception as e:
