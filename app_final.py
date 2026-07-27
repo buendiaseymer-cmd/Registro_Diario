@@ -5,17 +5,77 @@ import datetime
 import json
 import pandas as pd
 
+# ---- CONFIGURACIÓN DE LA PÁGINA ----
+st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
+
+# ---- SISTEMA DE LOGIN ----
+def verificar_autenticacion():
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+    if st.session_state.authenticated:
+        return True
+
+    st.markdown("<h2 style='text-align: center;'>🔐 Acceso restringido</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Ingrese la contraseña general para continuar</p>", unsafe_allow_html=True)
+
+    with st.form("login_form"):
+        password = st.text_input("Contraseña", type="password")
+        submit = st.form_submit_button("Ingresar", use_container_width=True)
+
+        if submit:
+            try:
+                correct_password = st.secrets["general_password"]
+            except:
+                st.error("❌ No se encontró la contraseña en los secretos. Configura 'general_password' en .streamlit/secrets.toml")
+                return False
+
+            if password == correct_password:
+                st.session_state.authenticated = True
+                st.success("✅ Acceso concedido")
+                st.rerun()
+            else:
+                st.error("❌ Contraseña incorrecta")
+    return False
+
+if not verificar_autenticacion():
+    st.stop()
+
+# ---- CONEXIÓN A GOOGLE SHEETS ----
+@st.cache_resource
+def conectar_google_sheets():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    if "google_credentials" in st.secrets:
+        creds_dict = json.loads(st.secrets["google_credentials"])
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    else:
+        creds = ServiceAccountCredentials.from_json_keyfile_name("credenciales.json", scope)
+    cliente = gspread.authorize(creds)
+    return cliente
+
+try:
+    cliente = conectar_google_sheets()
+    hoja_reporte = cliente.open("Registro_Diario_Equipos").sheet1
+    hoja_costos = cliente.open("Costos Diarios").worksheet("Costos_Diarios")
+except Exception as e:
+    st.error("❌ Error conectando a Google Sheets. Verifica los nombres de los archivos.")
+    st.stop()
+
 # ==========================================
-# 1. FUNCIÓN DE CARGA (CON TIEMPO DE VIDA)
+# 1. FUNCIÓN DE CARGA DESDE GOOGLE SHEETS
 # ==========================================
-@st.cache_data(ttl=600) 
-def cargar_bd_personal():
+@st.cache_data(ttl=600)
+def cargar_bd_personal_sheets():
     try:
-        df_bd = pd.read_excel("base_datos.xlsx") 
-        lista = (df_bd["DNI"].astype(str) + " - " + df_bd["NOMBRE"]).tolist()
-        return lista
+        hoja_personal = cliente.open("Base_Personal").sheet1
+        datos = hoja_personal.get_all_values()
+        if len(datos) > 1:
+            df = pd.DataFrame(datos[1:], columns=datos[0])
+            lista = (df["DNI"].astype(str) + " - " + df["NOMBRE"]).tolist()
+            return lista
+        else:
+            return ["00000000 - SIN BASE DE DATOS"]
     except Exception as e:
-        return ["00000000 - SIN BASE DE DATOS"]
+        return ["00000000 - ERROR AL CARGAR DESDE SHEETS"]
 
 # ==========================================
 # 2. BOTÓN DE ACTUALIZACIÓN MANUAL (SIDEBAR)
@@ -32,9 +92,7 @@ with st.sidebar:
 # 3. ASIGNACIÓN A LA MEMORIA DE LA SESIÓN
 # ==========================================
 if "lista_personal" not in st.session_state:
-    st.session_state["lista_personal"] = cargar_bd_personal()
-
-lista_personal = cargar_bd_personal()
+    st.session_state["lista_personal"] = cargar_bd_personal_sheets()
 
 # ---- CONFIGURACIÓN DE LA PÁGINA ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
