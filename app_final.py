@@ -8,7 +8,6 @@ import pandas as pd
 # ==========================================
 # 1. FUNCIÓN DE CARGA (CON TIEMPO DE VIDA)
 # ==========================================
-# El ttl=600 hace que el caché caduque automáticamente cada 10 minutos (600 seg)
 @st.cache_data(ttl=600) 
 def cargar_bd_personal():
     try:
@@ -24,42 +23,30 @@ def cargar_bd_personal():
 with st.sidebar:
     st.markdown("### ⚙️ Sistema")
     if st.button("🔄 Actualizar Base de Datos", use_container_width=True):
-        # Rompemos el candado 1
         st.cache_data.clear() 
-        # Rompemos el candado 2
         if "lista_personal" in st.session_state:
             del st.session_state["lista_personal"] 
-        # Recargamos la app
         st.rerun()
 
 # ==========================================
 # 3. ASIGNACIÓN A LA MEMORIA DE LA SESIÓN
 # ==========================================
-# Si la lista no está en la memoria (porque es la primera vez o porque presionaste el botón), la cargamos
 if "lista_personal" not in st.session_state:
     st.session_state["lista_personal"] = cargar_bd_personal()
 
-
-
 lista_personal = cargar_bd_personal()
-# ---- CONFIGURACIÓN DE LA PÁGINA (siempre primero) ----
+
+# ---- CONFIGURACIÓN DE LA PÁGINA ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
 
 # ---- SISTEMA DE LOGIN ----
 def verificar_autenticacion():
-    """
-    Controla el acceso mediante contraseña general.
-    La contraseña se lee desde st.secrets (recomendado) o desde una variable.
-    """
-    # Inicializar estado de autenticación
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
 
-    # Si ya está autenticado, no mostramos el login
     if st.session_state.authenticated:
         return True
 
-    # Mostrar formulario de login
     st.markdown("<h2 style='text-align: center;'>🔐 Acceso restringido</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Ingrese la contraseña general para continuar</p>", unsafe_allow_html=True)
 
@@ -68,31 +55,22 @@ def verificar_autenticacion():
         submit = st.form_submit_button("Ingresar", use_container_width=True)
 
         if submit:
-            # 🔑 Obtener la contraseña desde los secretos (recomendado)
-            # Asegúrate de tener en .streamlit/secrets.toml: general_password = "tu_clave"
             try:
                 correct_password = st.secrets["general_password"]
             except:
-                # Fallback: si no usas secrets, define aquí la contraseña (menos seguro)
-                # correct_password = "admin123"  # <-- cambia por tu contraseña
                 st.error("❌ No se encontró la contraseña en los secretos. Configura 'general_password' en .streamlit/secrets.toml")
                 return False
 
             if password == correct_password:
                 st.session_state.authenticated = True
                 st.success("✅ Acceso concedido")
-                st.rerun()  # Recarga la página para mostrar el contenido
+                st.rerun()
             else:
                 st.error("❌ Contraseña incorrecta")
     return False
 
-# ---- BLOQUE DE AUTENTICACIÓN ----
 if not verificar_autenticacion():
-    st.stop()  # Detiene la ejecución si no está autenticado
-
-# ---- A PARTIR DE AQUÍ TODO EL CÓDIGO ORIGINAL (PROTEGIDO) ----
-# Solo se ejecuta si el login fue exitoso
-
+    st.stop()
 
 @st.cache_resource
 def conectar_google_sheets():
@@ -123,7 +101,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# CREACIÓN DE LAS PESTAÑAS (TABS)
+# CREACIÓN DE LAS PESTAÑAS
 # =====================================================================
 tab1, tab2 = st.tabs(["📝 PARTE OPERADOR", "📈 HOJA DE PRODUCCIÓN"])
 
@@ -156,7 +134,6 @@ with tab1:
         enviado_reporte = st.form_submit_button("Guardar Ficha Diaria", use_container_width=True, type="primary")
 
     if enviado_reporte:
-        # Se quitó "or not codigo_equipo" de esta línea:
         if not operador or not frente_trabajo or not codigo_interno or not fase:
             st.error("⚠️ Faltan campos obligatorios.")
         elif final_horometro < inicio_horometro:
@@ -167,11 +144,15 @@ with tab1:
             
             fila_nueva = [codigo_interno, codigo_equipo, operador, fecha_str, guardia_turno, 
                           inicio_horometro, final_horometro, actividad, total_horas, fase, "", frente_trabajo, ""]
-            try:
-                hoja_reporte.append_row(fila_nueva, value_input_option='USER_ENTERED')
-                st.success("✅ ¡Ficha guardada con éxito!")
-            except Exception as e:
-                st.error(f"❌ Falló al enviar. Detalle del error: {e}")
+            # <<< SPINNER AÑADIDO >>>
+            with st.spinner("⏳ Guardando ficha diaria, por favor espere..."):
+                try:
+                    hoja_reporte.append_row(fila_nueva, value_input_option='USER_ENTERED')
+                    st.success("✅ ¡Ficha guardada con éxito!")
+                    st.toast("Ficha diaria guardada", icon="✅")
+                except Exception as e:
+                    st.error(f"❌ Falló al enviar. Detalle del error: {e}")
+
 # ---------------------------------------------------------------------
 # PESTAÑA 2: HOJA DE PRODUCCIÓN (AUTO-NUMERADA)
 # ---------------------------------------------------------------------
@@ -193,9 +174,7 @@ with tab2:
     with col5:
         frente_prod = st.text_input("FRENTE DE TRABAJO *", key="frente_prod").upper()
 
-    # ==========================================
-    # --- PREPARACIÓN PARA EL BLOQUE 2 (FUERA DEL FORMULARIO) ---
-    # ==========================================
+    # --- PREPARACIÓN PARA EL BLOQUE 2 ---
     st.markdown("<br>", unsafe_allow_html=True)
     st.info("💡 **Preparación para el Tareo (Bloque 2):** Si un trabajador no está en la lista desplegable, agrégalo aquí antes de empezar a llenar las tablas.")
     
@@ -219,9 +198,7 @@ with tab2:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ==========================================
     # --- APERTURA DEL FORMULARIO PRINCIPAL ---
-    # ==========================================
     with st.form("form_produccion", clear_on_submit=True):
         
         # --- CONFIGURACIÓN BASE PARA COLUMNAS DE HORAS/CANTIDADES ---
@@ -233,9 +210,7 @@ with tab2:
             "ACT.5": st.column_config.NumberColumn("ACT.5"),
         }
 
-        # ==========================================
-        # BLOQUE 1: ACTIVIDADES
-        # ==========================================
+        # --- BLOQUE 1: ACTIVIDADES ---
         st.markdown("#### Actividades")
 
         def crear_tabla_actividades():
@@ -257,9 +232,7 @@ with tab2:
             num_rows="dynamic", use_container_width=True, column_config=columnas_act
         )
 
-        # ==========================================
-        # BLOQUE 2: TAREO DE PERSONAL
-        # ==========================================
+        # --- BLOQUE 2: TAREO DE PERSONAL ---
         st.markdown("---")
         st.markdown("#### Tareo de Personal")
         
@@ -288,9 +261,7 @@ with tab2:
             num_rows="dynamic", use_container_width=True, column_config=columnas_tareo
         )
 
-        # ==========================================
-        # BLOQUE 3: EQUIPOS
-        # ==========================================
+        # --- BLOQUE 3: EQUIPOS ---
         st.markdown("---")
         st.markdown("#### Equipos")
 
@@ -313,9 +284,7 @@ with tab2:
             num_rows="dynamic", use_container_width=True, column_config=columnas_equipos
         )
 
-        # ==========================================
-        # BLOQUE 3.1: MATERIALES (METRADO)
-        # ==========================================
+        # --- BLOQUE 3.1: MATERIALES (METRADO) ---
         st.markdown("---")
         st.markdown("#### Materiales (metrado)")
 
@@ -502,77 +471,79 @@ with tab2:
                 bloque_final.append([observaciones, "", "", "", "", "", "", "", ""])
             bloque_final.append(["", "", "", "", "", "", "", "", ""]) # Espacio final
 
-            # --- ENVÍO Y FORMATO A EXCEL ---
-            try:
-                respuesta = hoja_costos.append_rows(bloque_final, value_input_option='USER_ENTERED')
-                
-                rango_actualizado = respuesta.get('updates', {}).get('updatedRange', '')
-                celda_inicio = rango_actualizado.split('!')[1].split(':')[0] 
-                fila_inicio = int(''.join(filter(str.isdigit, celda_inicio))) 
-                
-                # --- FORMATO CABECERA ---
-                hoja_costos.format(f"B{fila_inicio}:B{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
-                hoja_costos.format(f"C{fila_inicio}:C{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "LEFT"})
+            # <<< SPINNER AÑADIDO EN LA HOJA DE PRODUCCIÓN >>>
+            with st.spinner("⏳ Guardando hoja de producción, esto puede tardar unos segundos..."):
+                try:
+                    respuesta = hoja_costos.append_rows(bloque_final, value_input_option='USER_ENTERED')
+                    
+                    rango_actualizado = respuesta.get('updates', {}).get('updatedRange', '')
+                    celda_inicio = rango_actualizado.split('!')[1].split(':')[0] 
+                    fila_inicio = int(''.join(filter(str.isdigit, celda_inicio))) 
+                    
+                    # --- FORMATO CABECERA ---
+                    hoja_costos.format(f"B{fila_inicio}:B{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "RIGHT"})
+                    hoja_costos.format(f"C{fila_inicio}:C{fila_inicio+4}", {"textFormat": {"bold": True}, "horizontalAlignment": "LEFT"})
 
-                # --- FORMATO BLOQUE 1 ---
-                f_tit_b1_1 = fila_inicio + 6
-                f_tit_b1_2 = fila_inicio + 7
-                f_fin_b1 = f_tit_b1_2 + (len(df_actividades) if not df_actividades.empty else 1)
-                
-                hoja_costos.merge_cells(f"E{f_tit_b1_1}:F{f_tit_b1_1}")
-                for col in ["A", "B", "C", "D", "G", "H"]:
-                    hoja_costos.merge_cells(f"{col}{f_tit_b1_1}:{col}{f_tit_b1_2}")
-                
-                hoja_costos.format(f"A{f_tit_b1_1}:H{f_tit_b1_2}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"A{f_tit_b1_2+1}:H{f_fin_b1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                    # --- FORMATO BLOQUE 1 ---
+                    f_tit_b1_1 = fila_inicio + 6
+                    f_tit_b1_2 = fila_inicio + 7
+                    f_fin_b1 = f_tit_b1_2 + (len(df_actividades) if not df_actividades.empty else 1)
+                    
+                    hoja_costos.merge_cells(f"E{f_tit_b1_1}:F{f_tit_b1_1}")
+                    for col in ["A", "B", "C", "D", "G", "H"]:
+                        hoja_costos.merge_cells(f"{col}{f_tit_b1_1}:{col}{f_tit_b1_2}")
+                    
+                    hoja_costos.format(f"A{f_tit_b1_1}:H{f_tit_b1_2}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                    hoja_costos.format(f"A{f_tit_b1_2+1}:H{f_fin_b1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
-                # --- FORMATO BLOQUE 2 ---
-                f_ini_b2 = fila_inicio + len_b1
-                f_fin_b2 = f_ini_b2 + 1 + filas_datos_b2
-                
-                hoja_costos.merge_cells(f"D{f_ini_b2}:H{f_ini_b2}") 
-                for col in ["A", "B", "C", "I"]:
-                    hoja_costos.merge_cells(f"{col}{f_ini_b2}:{col}{f_ini_b2+1}")
-                
-                hoja_costos.format(f"A{f_ini_b2}:I{f_ini_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"A{f_ini_b2+2}:I{f_fin_b2}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
-                
-                hoja_costos.merge_cells(f"A{f_fin_b2+1}:H{f_fin_b2+1}")
-                hoja_costos.format(f"A{f_fin_b2+1}:I{f_fin_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER"})
+                    # --- FORMATO BLOQUE 2 ---
+                    f_ini_b2 = fila_inicio + len_b1
+                    f_fin_b2 = f_ini_b2 + 1 + filas_datos_b2
+                    
+                    hoja_costos.merge_cells(f"D{f_ini_b2}:H{f_ini_b2}") 
+                    for col in ["A", "B", "C", "I"]:
+                        hoja_costos.merge_cells(f"{col}{f_ini_b2}:{col}{f_ini_b2+1}")
+                    
+                    hoja_costos.format(f"A{f_ini_b2}:I{f_ini_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                    hoja_costos.format(f"A{f_ini_b2+2}:I{f_fin_b2}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                    
+                    hoja_costos.merge_cells(f"A{f_fin_b2+1}:H{f_fin_b2+1}")
+                    hoja_costos.format(f"A{f_fin_b2+1}:I{f_fin_b2+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER"})
 
-                # --- FORMATO BLOQUE 3 ---
-                f_ini_b3 = fila_inicio + len_b2
-                f_fin_b3 = f_ini_b3 + 1 + filas_datos_b3
-                
-                hoja_costos.merge_cells(f"D{f_ini_b3}:H{f_ini_b3}") 
-                for col in ["A", "B", "C", "I"]:
-                    hoja_costos.merge_cells(f"{col}{f_ini_b3}:{col}{f_ini_b3+1}")
-                
-                hoja_costos.format(f"A{f_ini_b3}:I{f_ini_b3+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"A{f_ini_b3+2}:I{f_fin_b3}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                    # --- FORMATO BLOQUE 3 ---
+                    f_ini_b3 = fila_inicio + len_b2
+                    f_fin_b3 = f_ini_b3 + 1 + filas_datos_b3
+                    
+                    hoja_costos.merge_cells(f"D{f_ini_b3}:H{f_ini_b3}") 
+                    for col in ["A", "B", "C", "I"]:
+                        hoja_costos.merge_cells(f"{col}{f_ini_b3}:{col}{f_ini_b3+1}")
+                    
+                    hoja_costos.format(f"A{f_ini_b3}:I{f_ini_b3+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                    hoja_costos.format(f"A{f_ini_b3+2}:I{f_fin_b3}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
-                # --- FORMATO BLOQUE 3.1 ---
-                f_ini_b3_1 = fila_inicio + len_b3
-                f_fin_b3_1 = f_ini_b3_1 + 1 + filas_datos_b3_1
-                
-                hoja_costos.merge_cells(f"D{f_ini_b3_1}:H{f_ini_b3_1}") 
-                for col in ["A", "B", "C", "I"]:
-                    hoja_costos.merge_cells(f"{col}{f_ini_b3_1}:{col}{f_ini_b3_1+1}")
-                
-                hoja_costos.format(f"A{f_ini_b3_1}:I{f_ini_b3_1+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
-                hoja_costos.format(f"A{f_ini_b3_1+2}:I{f_fin_b3_1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
+                    # --- FORMATO BLOQUE 3.1 ---
+                    f_ini_b3_1 = fila_inicio + len_b3
+                    f_fin_b3_1 = f_ini_b3_1 + 1 + filas_datos_b3_1
+                    
+                    hoja_costos.merge_cells(f"D{f_ini_b3_1}:H{f_ini_b3_1}") 
+                    for col in ["A", "B", "C", "I"]:
+                        hoja_costos.merge_cells(f"{col}{f_ini_b3_1}:{col}{f_ini_b3_1+1}")
+                    
+                    hoja_costos.format(f"A{f_ini_b3_1}:I{f_ini_b3_1+1}", {"textFormat": {"bold": True}, "horizontalAlignment": "CENTER", "verticalAlignment": "MIDDLE"})
+                    hoja_costos.format(f"A{f_ini_b3_1+2}:I{f_fin_b3_1}", {"backgroundColor": {"red": 0.65, "green": 0.88, "blue": 0.58}})
 
-                # --- FORMATO OBSERVACIONES ---
-                if observaciones.strip():
-                    fila_obs_label = f_fin_b3_1 + 1
-                    fila_obs_text  = f_fin_b3_1 + 2
-                    hoja_costos.merge_cells(f"A{fila_obs_label}:H{fila_obs_label}")
-                    hoja_costos.format(f"A{fila_obs_label}", {"textFormat": {"bold": True}})
-                    hoja_costos.merge_cells(f"A{fila_obs_text}:H{fila_obs_text}")
-                    hoja_costos.format(f"A{fila_obs_text}:H{fila_obs_text}", {"wrapStrategy": "WRAP"})
+                    # --- FORMATO OBSERVACIONES ---
+                    if observaciones.strip():
+                        fila_obs_label = f_fin_b3_1 + 1
+                        fila_obs_text  = f_fin_b3_1 + 2
+                        hoja_costos.merge_cells(f"A{fila_obs_label}:H{fila_obs_label}")
+                        hoja_costos.format(f"A{fila_obs_label}", {"textFormat": {"bold": True}})
+                        hoja_costos.merge_cells(f"A{fila_obs_text}:H{fila_obs_text}")
+                        hoja_costos.format(f"A{fila_obs_text}:H{fila_obs_text}", {"wrapStrategy": "WRAP"})
 
-                st.success("✅ ¡Todos los bloques de Producción se guardaron y formatearon correctamente en Excel!")
-            except Exception as e:
-                st.error(f"❌ Falló la conexión al enviar o dar formato. Error: {e}")
+                    st.success("✅ ¡Todos los bloques de Producción se guardaron y formatearon correctamente en Excel!")
+                    st.toast("Hoja de producción guardada", icon="📈")
+                except Exception as e:
+                    st.error(f"❌ Falló la conexión al enviar o dar formato. Error: {e}")
 
 st.markdown("<br><hr><p style='text-align: center; color: gray; font-size: 12px;'><b>EngiLab</b> © 2026</p>", unsafe_allow_html=True)
