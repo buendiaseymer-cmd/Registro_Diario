@@ -99,8 +99,15 @@ st.markdown("""
     input[type="text"], textarea { text-transform: uppercase; }
     div[data-testid="stHorizontalBlock"] { flex-direction: row !important; flex-wrap: nowrap !important; }
     div[data-testid="column"] { width: 100% !important; flex: 1 1 0% !important; min-width: 0 !important; padding: 0 5px !important; }
-    /* Impide reordenar columnas en los data_editor */
-    div[data-testid="stDataEditor"] .dvn-scroller .draggable-handle { display: none !important; }
+    
+    /* Oculta la manija de arrastre para reordenar columnas */
+    div[data-testid="stDataEditor"] [class*="drag-handle"] {
+        display: none !important;
+    }
+    
+    /* Oculta el botón de tres puntitos (acciones de columna) */
+    button[data-testid="stDataEditorColumnActions"] {
+        display: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
