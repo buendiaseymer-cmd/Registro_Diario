@@ -230,9 +230,23 @@ with tab2:
             "FASE": st.column_config.Column("FASE", pinned=True),
         }
 
+        orden_columnas_act = [
+            "_index",
+            "NOMBRE DE LA ACTIVIDAD",
+            "UND.",
+            "CANT.",
+            "PROGRESIVA DEL",
+            "PROGRESIVA AL",
+            "LADO",
+            "FASE"
+        ]
+
         df_actividades = st.data_editor(
             crear_tabla_actividades(),
-            num_rows="dynamic", use_container_width=True, column_config=columnas_act
+            num_rows="dynamic",
+            use_container_width=True,
+            column_config=columnas_act,
+            column_order=orden_columnas_act
         )
 
         st.markdown("---")
@@ -259,9 +273,14 @@ with tab2:
             **columnas_base_horas
         }
 
+        orden_tareo = ["_index", "TAREO PERSONAL", "CARGO", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
+
         df_tareo = st.data_editor(
             crear_tabla_tareo(),
-            num_rows="dynamic", use_container_width=True, column_config=columnas_tareo
+            num_rows="dynamic",
+            use_container_width=True,
+            column_config=columnas_tareo,
+            column_order=orden_tareo
         )
 
         st.markdown("---")
@@ -282,9 +301,14 @@ with tab2:
             **columnas_base_horas
         }
 
+        orden_equipos = ["_index", "DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
+
         df_equipos = st.data_editor(
             crear_tabla_equipos(),
-            num_rows="dynamic", use_container_width=True, column_config=columnas_equipos
+            num_rows="dynamic",
+            use_container_width=True,
+            column_config=columnas_equipos,
+            column_order=orden_equipos
         )
 
         st.markdown("---")
@@ -305,9 +329,14 @@ with tab2:
             **columnas_base_horas
         }
 
+        orden_materiales = ["_index", "DESCRIPCION DE LOS MATERIALES", "UNIDAD", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
+
         df_materiales = st.data_editor(
             crear_tabla_materiales(),
-            num_rows="dynamic", use_container_width=True, column_config=columnas_materiales
+            num_rows="dynamic",
+            use_container_width=True,
+            column_config=columnas_materiales,
+            column_order=orden_materiales
         )
 
         st.markdown("---")
