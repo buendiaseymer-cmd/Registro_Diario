@@ -199,12 +199,13 @@ with tab2:
 
     with st.form("form_produccion", clear_on_submit=True):
 
+        # Columnas de horas fijas (pinned=True)
         columnas_base_horas = {
-            "ACT.1": st.column_config.NumberColumn("ACT.1"),
-            "ACT.2": st.column_config.NumberColumn("ACT.2"),
-            "ACT.3": st.column_config.NumberColumn("ACT.3"),
-            "ACT.4": st.column_config.NumberColumn("ACT.4"),
-            "ACT.5": st.column_config.NumberColumn("ACT.5"),
+            "ACT.1": st.column_config.NumberColumn("ACT.1", pinned=True),
+            "ACT.2": st.column_config.NumberColumn("ACT.2", pinned=True),
+            "ACT.3": st.column_config.NumberColumn("ACT.3", pinned=True),
+            "ACT.4": st.column_config.NumberColumn("ACT.4", pinned=True),
+            "ACT.5": st.column_config.NumberColumn("ACT.5", pinned=True),
         }
 
         st.markdown("#### Actividades")
@@ -217,10 +218,16 @@ with tab2:
             df.index = [1, 2, 3]
             return df
 
+        # Columna "NOMBRE DE LA ACTIVIDAD" sin pinned (libre)
         columnas_act = {
             "_index": st.column_config.Column("ACT.", pinned=True, disabled=True),
-            "NOMBRE DE LA ACTIVIDAD": st.column_config.Column(pinned=True),
-            "CANT.": st.column_config.NumberColumn("CANT.", format="%.2f")
+            "NOMBRE DE LA ACTIVIDAD": st.column_config.Column(pinned=False),
+            "UND.": st.column_config.Column("UND.", pinned=True),
+            "CANT.": st.column_config.NumberColumn("CANT.", format="%.2f", pinned=True),
+            "PROGRESIVA DEL": st.column_config.Column("PROGRESIVA DEL", pinned=True),
+            "PROGRESIVA AL": st.column_config.Column("PROGRESIVA AL", pinned=True),
+            "LADO": st.column_config.Column("LADO", pinned=True),
+            "FASE": st.column_config.Column("FASE", pinned=True),
         }
 
         df_actividades = st.data_editor(
@@ -245,9 +252,10 @@ with tab2:
                 "TAREO PERSONAL",
                 help="Haz doble clic y escribe el DNI o Nombre para buscar",
                 options=st.session_state["lista_personal"],
-                required=True
+                required=True,
+                pinned=True
             ),
-            "CARGO": st.column_config.Column("CARGO"),
+            "CARGO": st.column_config.Column("CARGO", pinned=True),
             **columnas_base_horas
         }
 
@@ -270,6 +278,7 @@ with tab2:
         columnas_equipos = {
             "_index": st.column_config.Column("N°", pinned=True, disabled=True),
             "DESCRIPCION DE EQUIPOS": st.column_config.Column(pinned=True),
+            "CODIGO/PLACA": st.column_config.Column("CODIGO/PLACA", pinned=True),
             **columnas_base_horas
         }
 
@@ -292,6 +301,7 @@ with tab2:
         columnas_materiales = {
             "_index": st.column_config.Column("N°", pinned=True, disabled=True),
             "DESCRIPCION DE LOS MATERIALES": st.column_config.Column(pinned=True),
+            "UNIDAD": st.column_config.Column("UNIDAD", pinned=True),
             **columnas_base_horas
         }
 
