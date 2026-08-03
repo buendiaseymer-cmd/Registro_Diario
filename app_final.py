@@ -221,7 +221,7 @@ with tab2:
         # Columna "NOMBRE DE LA ACTIVIDAD" sin pinned (libre)
         columnas_act = {
             "_index": st.column_config.Column("ACT.", pinned=True, disabled=True),
-            "NOMBRE DE LA ACTIVIDAD": st.column_config.Column(pinned=False),
+            "NOMBRE DE LA ACTIVIDAD": st.column_config.Column(pinned=True),
             "UND.": st.column_config.Column("UND.", pinned=True),
             "CANT.": st.column_config.NumberColumn("CANT.", format="%.2f", pinned=True),
             "PROGRESIVA DEL": st.column_config.Column("PROGRESIVA DEL", pinned=True),
