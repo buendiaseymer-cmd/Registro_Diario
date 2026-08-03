@@ -101,7 +101,7 @@ st.markdown("""
     div[data-testid="column"] { width: 100% !important; flex: 1 1 0% !important; min-width: 0 !important; padding: 0 5px !important; }
     
     /* Oculta la manija de arrastre para reordenar columnas */
-    div[data-testid="stDataEditor"] [class*="drag-handle"] {
+    div[data-testid="stDataEditor"] .dvn-scroller [role="columnheader"] .draggable-handle {
         display: none !important;
     }
     
