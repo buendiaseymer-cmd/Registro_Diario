@@ -100,8 +100,7 @@ st.markdown("""
     div[data-testid="stHorizontalBlock"] { flex-direction: row !important; flex-wrap: nowrap !important; }
     div[data-testid="column"] { width: 100% !important; flex: 1 1 0% !important; min-width: 0 !important; padding: 0 5px !important; }
     /* Impide reordenar columnas en los data_editor */
-    div[data-testid="stDataEditor"] [class*="drag-handle"] {
-        display: none !important;
+    div[data-testid="stDataEditor"] .dvn-scroller .draggable-handle { display: none !important; }
     }
     </style>
 """, unsafe_allow_html=True)
