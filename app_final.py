@@ -99,6 +99,10 @@ st.markdown("""
     input[type="text"], textarea { text-transform: uppercase; }
     div[data-testid="stHorizontalBlock"] { flex-direction: row !important; flex-wrap: nowrap !important; }
     div[data-testid="column"] { width: 100% !important; flex: 1 1 0% !important; min-width: 0 !important; padding: 0 5px !important; }
+    /* Impide reordenar columnas en los data_editor */
+    div[data-testid="stDataEditor"] [class*="drag-handle"] {
+        display: none !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -218,7 +222,6 @@ with tab2:
             df.index = [1, 2, 3]
             return df
 
-        # Columna "NOMBRE DE LA ACTIVIDAD" sin pinned (libre)
         columnas_act = {
             "_index": st.column_config.Column("ACT.", pinned=True, disabled=True),
             "NOMBRE DE LA ACTIVIDAD": st.column_config.Column(pinned=True),
