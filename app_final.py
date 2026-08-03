@@ -100,13 +100,18 @@ st.markdown("""
     div[data-testid="stHorizontalBlock"] { flex-direction: row !important; flex-wrap: nowrap !important; }
     div[data-testid="column"] { width: 100% !important; flex: 1 1 0% !important; min-width: 0 !important; padding: 0 5px !important; }
     
-    /* Oculta la manija de arrastre para reordenar columnas */
-    div[data-testid="stDataEditor"] .dvn-scroller [role="columnheader"] .draggable-handle {
+    /* Oculta manijas de arrastre de columna (varios intentos de selector) */
+    [class*="drag-handle"],
+    [class*="draggable-handle"],
+    .dvn-scroller .draggable-handle,
+    div[data-testid="stDataEditor"] [role="columnheader"] [draggable="true"] {
         display: none !important;
     }
     
-    /* Oculta el botón de tres puntitos (acciones de columna) */
-    button[data-testid="stDataEditorColumnActions"] {
+    /* Oculta el botón de tres puntos (acciones de columna) */
+    button[data-testid="column-menu-trigger"],
+    button[data-testid="stDataEditorColumnActions"],
+    [data-testid="column-header-menu"] button {
         display: none !important;
     }
     </style>
