@@ -117,6 +117,27 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+st.components.v1.html("""
+<script>
+const observer = new MutationObserver(() => {
+    // Eliminar manijas de arrastre
+    document.querySelectorAll('[draggable="true"]').forEach(el => {
+        if (el.closest('[data-testid="stDataEditor"]') && el.getAttribute('role') === 'columnheader') {
+            el.setAttribute('draggable', 'false');
+            el.style.cursor = 'default';
+        }
+    });
+    // Ocultar botones de menú de columna (tres puntos)
+    document.querySelectorAll('button').forEach(btn => {
+        if (btn.innerText === '⋮' || btn.getAttribute('data-testid')?.includes('column-menu')) {
+            btn.style.display = 'none';
+        }
+    });
+});
+observer.observe(document.body, { childList: true, subtree: true });
+</script>
+""", height=0)
+
 # =====================================================================
 # CREACIÓN DE LAS PESTAÑAS
 # =====================================================================
