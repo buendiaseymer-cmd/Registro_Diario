@@ -152,7 +152,7 @@ with tab1:
 
     with st.form("ficha_diaria", clear_on_submit=True):
         col1, col2 = st.columns(2)
-        with col1: fecha = st.date_input("FECHA *", datetime.date.today())
+        with col1: fecha = st.date_input("FECHA *", datetime.date.today(), format="DD/MM/YYYY")
         with col2: guardia_turno = st.selectbox("TURNO *", ["Día", "Noche"])
 
         col1, col2 = st.columns(2)
@@ -198,7 +198,7 @@ with tab2:
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        fecha_prod = st.date_input("FECHA *", datetime.date.today(), key="fecha_prod")
+        fecha_prod = st.date_input("FECHA *", datetime.date.today(), key="fecha_prod", format="DD/MM/YYYY")
     with col2:
         turno_prod = st.selectbox("TURNO *", ["DÍA", "NOCHE"], key="turno_prod")
     with col3:
