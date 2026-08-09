@@ -196,20 +196,6 @@ with tab1:
 with tab2:
     st.markdown("<h3 style='text-align: center;'>Hoja de Producción</h3>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        fecha_prod = st.date_input("FECHA *", datetime.date.today(), key="fecha_prod", format="DD/MM/YYYY")
-    with col2:
-        turno_prod = st.selectbox("TURNO *", ["DÍA", "NOCHE"], key="turno_prod")
-    with col3:
-        jefe_grupo_prod = st.text_input("JEFE DE GRUPO *", key="jefe_prod").upper()
-
-    col4, col5 = st.columns(2)
-    with col4:
-        tramo_prod = st.text_input("TRAMO *", key="tramo_prod").upper()
-    with col5:
-        frente_prod = st.text_input("FRENTE DE TRABAJO *", key="frente_prod").upper()
-
     st.markdown("<br>", unsafe_allow_html=True)
     st.info("💡 **Preparación para el Tareo (Bloque 2):** Si un trabajador no está en la lista desplegable, agrégalo aquí antes de empezar a llenar las tablas.")
 
@@ -234,6 +220,21 @@ with tab2:
     st.markdown("<br>", unsafe_allow_html=True)
 
     with st.form("form_produccion", clear_on_submit=True):
+
+        # --- CABECERA DENTRO DEL FORMULARIO ---
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            fecha_prod = st.date_input("FECHA *", datetime.date.today(), key="fecha_prod", format="DD/MM/YYYY")
+        with col2:
+            turno_prod = st.selectbox("TURNO *", ["DÍA", "NOCHE"], key="turno_prod")
+        with col3:
+            jefe_grupo_prod = st.text_input("JEFE DE GRUPO *", key="jefe_prod").upper()
+
+        col4, col5 = st.columns(2)
+        with col4:
+            tramo_prod = st.text_input("TRAMO *", key="tramo_prod").upper()
+        with col5:
+            frente_prod = st.text_input("FRENTE DE TRABAJO *", key="frente_prod").upper()
 
         # Columnas de horas fijas (pinned=True)
         columnas_base_horas = {
