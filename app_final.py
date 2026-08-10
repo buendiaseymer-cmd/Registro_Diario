@@ -66,7 +66,7 @@ except Exception as e:
 @st.cache_data(ttl=600)
 def cargar_bd_personal_sheets():
     try:
-        hoja_personal = cliente.open("Base_Personal").sheet1
+        hoja_personal = cliente.open("Base_Personal").worksheet("Sheet1")
         datos = hoja_personal.get_all_values()
         if len(datos) > 1:
             df = pd.DataFrame(datos[1:], columns=datos[0])
@@ -77,6 +77,17 @@ def cargar_bd_personal_sheets():
     except Exception as e:
         return ["00000000 - ERROR AL CARGAR DESDE SHEETS"]
 
+@st.cache_data(ttl=600)
+def cargar_cargos_sheets():
+    try:
+        hoja_personal = cliente.open("Base_Personal")
+        hoja_cargos = hoja_personal.worksheet("cargos")
+        datos = hoja_cargos.get_all_values()[1:]
+        lista_cargos = [fila[0].strip() for fila in datos if fila and fila[0].strip()]
+        return lista_cargos if lista_cargos else ["SIN CARGOS DISPONIBLES"]
+    except Exception as e:
+        return ["ERROR AL CARGAR CARGOS"]
+
 # ==========================================
 # 2. BOTÓN DE ACTUALIZACIÓN MANUAL (SIDEBAR)
 # ==========================================
@@ -86,6 +97,8 @@ with st.sidebar:
         st.cache_data.clear()
         if "lista_personal" in st.session_state:
             del st.session_state["lista_personal"]
+        if "lista_cargos" in st.session_state:
+            del st.session_state["lista_cargos"]
         st.rerun()
 
 # ==========================================
@@ -93,6 +106,9 @@ with st.sidebar:
 # ==========================================
 if "lista_personal" not in st.session_state:
     st.session_state["lista_personal"] = cargar_bd_personal_sheets()
+
+if "lista_cargos" not in st.session_state:
+    st.session_state["lista_cargos"] = cargar_cargos_sheets()
 
 st.markdown("""
     <style>
@@ -282,7 +298,12 @@ with tab2:
                 required=True,
                 pinned=True
             ),
-            "CARGO": st.column_config.Column("CARGO", pinned=True),
+            "CARGO": st.column_config.SelectboxColumn(
+                "CARGO",
+                options=st.session_state["lista_cargos"],
+                required=True,
+                pinned=True
+            ),
             **columnas_base_horas
         }
 
