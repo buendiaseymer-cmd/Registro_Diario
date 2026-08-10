@@ -66,7 +66,7 @@ except Exception as e:
 @st.cache_data(ttl=600)
 def cargar_bd_personal_sheets():
     try:
-        hoja_personal = cliente.open("Base_Personal").worksheet("Sheet1")
+        hoja_personal = cliente.open("Base_Personal").worksheet("sheet1")
         datos = hoja_personal.get_all_values()
         if len(datos) > 1:
             df = pd.DataFrame(datos[1:], columns=datos[0])
