@@ -227,9 +227,9 @@ with tab2:
         def crear_tabla_actividades():
             columnas = ["NOMBRE DE LA ACTIVIDAD", "UND.", "CANT.", "PROGRESIVA DEL", "PROGRESIVA AL", "LADO", "FASE"]
             df = pd.DataFrame(columns=columnas)
-            for _ in range(3):
+            for _ in range(5):
                 df.loc[len(df)] = ["", "", None, "", "", "", ""]
-            df.index = [1, 2, 3]
+            df.index = [1, 2, 3, 4, 5]
             return df
 
         columnas_act = {
@@ -268,9 +268,9 @@ with tab2:
         def crear_tabla_tareo():
             columnas = ["TAREO PERSONAL", "CARGO", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
             df = pd.DataFrame(columns=columnas)
-            for _ in range(3):
+            for _ in range(8):
                 df.loc[len(df)] = ["", "", None, None, None, None, None]
-            df.index = [1, 2, 3]
+            df.index = [1, 2, 3, 4, 5, 6, 7, 8]
             return df
 
         columnas_tareo = {
@@ -302,9 +302,9 @@ with tab2:
         def crear_tabla_equipos():
             columnas = ["DESCRIPCION DE EQUIPOS", "CODIGO/PLACA", "ACT.1", "ACT.2", "ACT.3", "ACT.4", "ACT.5"]
             df = pd.DataFrame(columns=columnas)
-            for _ in range(3):
+            for _ in range(5):
                 df.loc[len(df)] = ["", "", None, None, None, None, None]
-            df.index = [1, 2, 3]
+            df.index = [1, 2, 3, 4, 5]
             return df
 
         columnas_equipos = {
