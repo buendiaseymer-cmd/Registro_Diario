@@ -181,8 +181,8 @@ with tab1:
         with col3: fase = st.text_input("FASE *", placeholder="EJ. EMER").upper()
 
         col1, col2 = st.columns(2)
-        with col1: inicio_horometro = st.number_input("INICIO HOR. *", min_value=0.0, format="%.2f")
-        with col2: final_horometro = st.number_input("FINAL HOR. *", min_value=0.0, format="%.2f")
+        with col1: inicio_horometro = st.number_input("INICIO HOR. *", min_value=0.0, format="%.2f", value=None)
+        with col2: final_horometro = st.number_input("FINAL HOR. *", min_value=0.0, format="%.2f", value=None)
 
         actividad = st.text_area("ACTIVIDAD/COMENTARIO").upper()
         enviado_reporte = st.form_submit_button("Guardar Ficha Diaria", use_container_width=True, type="primary")
@@ -190,6 +190,8 @@ with tab1:
     if enviado_reporte:
         if not operador or not frente_trabajo or not codigo_interno or not fase:
             st.error("⚠️ Faltan campos obligatorios.")
+        elif inicio_horometro is None or final_horometro is None:
+            st.error("⚠️ Debe ingresar ambos horómetros.")
         elif final_horometro < inicio_horometro:
             st.error("⚠️ El horómetro final no puede ser menor al inicial.")
         else:
