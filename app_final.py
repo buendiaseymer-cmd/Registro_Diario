@@ -178,7 +178,7 @@ with tab1:
         col1, col2, col3 = st.columns(3)
         with col1: codigo_interno = st.text_input("CÓDIGO *", placeholder="EJ. VOL-16").upper()
         with col2: codigo_equipo = st.text_input("CÓDIGO (SAP)", placeholder="EJ. PE90/A277").upper()
-        with col3: fase = st.text_input("FASE *", placeholder="EJ. EMER").upper()
+        with col3: fase = st.text_input("FASE *", placeholder="EJ. CANTERA KM 123").upper()
 
         col1, col2 = st.columns(2)
         with col1: inicio_horometro = st.number_input("INICIO HOR. *", min_value=0.0, format="%.2f", value=None)
