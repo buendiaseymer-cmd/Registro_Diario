@@ -63,7 +63,6 @@ except Exception as e:
 # ==========================================
 # 1. FUNCIÓN DE CARGA DESDE GOOGLE SHEETS
 # ==========================================
-@st.cache_data(ttl=600)
 def cargar_datos_base_personal():
     try:
         archivo = cliente.open("Base_Personal")
@@ -104,7 +103,6 @@ def cargar_datos_base_personal():
 with st.sidebar:
     st.markdown("### ⚙️ Sistema")
     if st.button("🔄 Actualizar Base de Datos", use_container_width=True):
-        st.cache_data.clear()
         for key in ["lista_personal", "lista_cargos", "lista_fases"]:
             if key in st.session_state:
                 del st.session_state[key]
