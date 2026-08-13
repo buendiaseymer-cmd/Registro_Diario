@@ -64,29 +64,39 @@ except Exception as e:
 # 1. FUNCIÓN DE CARGA DESDE GOOGLE SHEETS
 # ==========================================
 @st.cache_data(ttl=600)
-def cargar_bd_personal_sheets():
+def cargar_datos_base_personal():
     try:
-        hoja_personal = cliente.open("Base_Personal").worksheet("sheet1")
-        datos = hoja_personal.get_all_values()
-        if len(datos) > 1:
-            df = pd.DataFrame(datos[1:], columns=datos[0])
-            lista = (df["DNI"].astype(str) + " - " + df["NOMBRE"]).tolist()
-            return lista
-        else:
-            return ["00000000 - SIN BASE DE DATOS"]
-    except Exception as e:
-        return ["00000000 - ERROR AL CARGAR DESDE SHEETS"]
+        archivo = cliente.open("Base_Personal")
+        hoja_personal = archivo.worksheet("sheet1")
+        hoja_cargos = archivo.worksheet("cargos")
+        hoja_fases = archivo.worksheet("fases")
 
-@st.cache_data(ttl=600)
-def cargar_cargos_sheets():
-    try:
-        hoja_personal = cliente.open("Base_Personal")
-        hoja_cargos = hoja_personal.worksheet("cargos")
-        datos = hoja_cargos.get_all_values()[1:]
-        lista_cargos = [fila[0].strip() for fila in datos if fila and fila[0].strip()]
-        return lista_cargos if lista_cargos else ["SIN CARGOS DISPONIBLES"]
+        # Personal (DNI - NOMBRE)
+        datos_personal = hoja_personal.get_all_values()
+        if len(datos_personal) > 1:
+            df = pd.DataFrame(datos_personal[1:], columns=datos_personal[0])
+            lista_personal = (df["DNI"].astype(str) + " - " + df["NOMBRE"]).tolist()
+        else:
+            lista_personal = ["00000000 - SIN BASE DE DATOS"]
+
+        # Cargos
+        datos_cargos = hoja_cargos.get_all_values()[1:]
+        lista_cargos = [fila[0].strip() for fila in datos_cargos if fila and fila[0].strip()]
+        if not lista_cargos:
+            lista_cargos = ["SIN CARGOS DISPONIBLES"]
+
+        # Fases
+        datos_fases = hoja_fases.get_all_values()[1:]
+        lista_fases = [fila[0].strip() for fila in datos_fases if fila and fila[0].strip()]
+        if not lista_fases:
+            lista_fases = ["SIN FASES DISPONIBLES"]
+
+        return lista_personal, lista_cargos, lista_fases
+
     except Exception as e:
-        return ["ERROR AL CARGAR CARGOS"]
+        return (["00000000 - ERROR AL CARGAR DESDE SHEETS"],
+                ["ERROR AL CARGAR CARGOS"],
+                ["ERROR AL CARGAR FASES"])
 
 # ==========================================
 # 2. BOTÓN DE ACTUALIZACIÓN MANUAL (SIDEBAR)
@@ -95,20 +105,19 @@ with st.sidebar:
     st.markdown("### ⚙️ Sistema")
     if st.button("🔄 Actualizar Base de Datos", use_container_width=True):
         st.cache_data.clear()
-        if "lista_personal" in st.session_state:
-            del st.session_state["lista_personal"]
-        if "lista_cargos" in st.session_state:
-            del st.session_state["lista_cargos"]
+        for key in ["lista_personal", "lista_cargos", "lista_fases"]:
+            if key in st.session_state:
+                del st.session_state[key]
         st.rerun()
 
 # ==========================================
 # 3. ASIGNACIÓN A LA MEMORIA DE LA SESIÓN
 # ==========================================
-if "lista_personal" not in st.session_state:
-    st.session_state["lista_personal"] = cargar_bd_personal_sheets()
-
-if "lista_cargos" not in st.session_state:
-    st.session_state["lista_cargos"] = cargar_cargos_sheets()
+if "lista_personal" not in st.session_state or "lista_cargos" not in st.session_state or "lista_fases" not in st.session_state:
+    lista_personal, lista_cargos, lista_fases = cargar_datos_base_personal()
+    st.session_state["lista_personal"] = lista_personal
+    st.session_state["lista_cargos"] = lista_cargos
+    st.session_state["lista_fases"] = lista_fases
 
 st.markdown("""
     <style>
@@ -178,7 +187,7 @@ with tab1:
         col1, col2, col3 = st.columns(3)
         with col1: codigo_interno = st.text_input("CÓDIGO *", placeholder="EJ. VOL-16").upper()
         with col2: codigo_equipo = st.text_input("CÓDIGO (SAP)", placeholder="EJ. PE90/A277").upper()
-        with col3: fase = st.text_input("FASE *", placeholder="EJ. 02PRZA").upper()
+        with col3: fase = st.selectbox("FASE *", options=st.session_state["lista_fases"], index=None)
 
         col1, col2 = st.columns(2)
         with col1: inicio_horometro = st.number_input("INICIO HOR. *", min_value=0.0, format="%.2f", value=None)
