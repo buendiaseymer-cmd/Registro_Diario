@@ -4,6 +4,11 @@ from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 import json
 import pandas as pd
+from zoneinfo import ZoneInfo
+
+def hoy_peru():
+    """Devuelve la fecha actual en la zona horaria de Perú (America/Lima)."""
+    return datetime.datetime.now(ZoneInfo("America/Lima")).date()
 
 # ---- CONFIGURACIÓN DE LA PÁGINA ----
 st.set_page_config(page_title="Control Diario y Costos", layout="centered", page_icon="🏗️")
@@ -175,7 +180,7 @@ with tab1:
 
     with st.form("ficha_diaria", clear_on_submit=True):
         col1, col2 = st.columns(2)
-        with col1: fecha = st.date_input("FECHA *", datetime.date.today(), format="DD/MM/YYYY")
+        with col1: fecha = st.date_input("FECHA *", hoy_peru(), format="DD/MM/YYYY")
         with col2: guardia_turno = st.selectbox("TURNO *", ["Día", "Noche"])
 
         col1, col2 = st.columns(2)
@@ -226,7 +231,7 @@ with tab2:
         # --- CABECERA DENTRO DEL FORMULARIO ---
         col1, col2, col3 = st.columns(3)
         with col1:
-            fecha_prod = st.date_input("FECHA *", datetime.date.today(), key="fecha_prod", format="DD/MM/YYYY")
+            fecha_prod = st.date_input("FECHA *", hoy_peru(), key="fecha_prod", format="DD/MM/YYYY")
         with col2:
             turno_prod = st.selectbox("TURNO *", ["DÍA", "NOCHE"], key="turno_prod")
         with col3:
